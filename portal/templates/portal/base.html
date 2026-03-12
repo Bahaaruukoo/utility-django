@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ request.tenant.name }} Utility</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .sidebar {
+        width: 250px;
+        min-height: 100vh;
+        background-color: #1f2d3d;
+        color: white;
+        transition: width 0.3s ease;
+    }
+
+.sidebar.collapsed {
+    width: 70px;
+}
+
+.sidebar a {
+    color: #c2c7d0;
+    text-decoration: none;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sidebar a:hover {
+    background-color: #2e3f55;
+    color: white;
+}
+
+.sidebar .menu-title {
+    padding: 15px 20px 5px;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #6c757d;
+}
+.menu-toggle {
+    cursor: pointer;
+    color: #c2c7d0;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+.menu-toggle:hover {
+    background-color: #2e3f55;
+    color: white;
+}
+
+.menu-link {
+    padding: 10px 40px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #c2c7d0;
+    text-decoration: none;
+}
+
+.menu-link:hover {
+    background-color: #34495e;
+    color: white;
+}
+
+.menu-link.active {
+    background-color: #0d6efd;
+    color: white;
+    border-left: 3px solid #fff;
+}
+
+.sidebar.collapsed .menu-title,
+.sidebar.collapsed span,
+.sidebar.collapsed .sidebar-title {
+    display: none;
+}
+
+.alert {
+    padding: 4px 8px;   /* reduce vertical + horizontal padding */
+    margin-bottom: 6px; /* reduce space between messages */
+    font-size: 14px;    /* optional: smaller text */
+}
+
+
+#mainContent {
+    transition: margin-left 0.3s ease;
+}
+
+    </style>
+</head>
+<body class="bg-light">
+    <div class="d-flex">
+
+        <!-- Sidebar -->
+        <div id="sidebar" class="sidebar">
+
+            <div class="sidebar-header d-flex justify-content-between align-items-center px-3 py-3">
+                <h5 class="sidebar-title"> <a href="{% url 'home' %}">⚡{{ request.tenant.name }}</a></h5>
+                
+                <button id="toggleSidebar" class="btn btn-sm btn-outline-light">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+
+            <!-- MANAGEMENT -->
+            <div class="menu-group">
+                <a class="menu-toggle" data-bs-toggle="collapse" href="#managementMenu">
+                    <i class="bi bi-folder"></i>
+                    <span>Management</span>
+                    <i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+
+                <div class="collapse show" id="managementMenu">
+                    <a href="{% url 'customer_list' %}" class="menu-link">
+                        <i class="bi bi-people ms-2"></i>
+                        <span>Customers</span>
+                    </a>
+
+                    <a href="{% url 'meter_list' %}" class="menu-link">
+                        <i class="bi bi-speedometer2 ms-2"></i>
+                        <span>Meters</span>
+                    </a>
+
+                    <a href="{% url 'edit_billing_settings' %}" class="menu-link">
+                        <i class="bi bi-gear ms-2"></i>
+                        <span>Settings</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- OPERATIONS -->
+            <div class="menu-group">
+                <a class="menu-toggle" data-bs-toggle="collapse" href="#operationsMenu">
+                    <i class="bi bi-gear"></i>
+                    <span>Operations</span>
+                    <i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+
+                <div class="collapse show" id="operationsMenu">
+                    <a href="{% url 'meter_reading_list' %}" class="menu-link">
+                        <i class="bi bi-journal-text ms-2"></i>
+                        <span>Meter Reading</span>
+                    </a>
+
+                    <a href="{% url 'bill-list' %}" class="menu-link">
+                        <i class="bi bi-receipt ms-2"></i>
+                        <span>Bills</span>
+                    </a>
+
+                    <a href="{% url 'cashier_dashboard' %}" class="menu-link">
+                        <i class="bi bi-cash-coin ms-2"></i>
+                        <span>Cashier</span>
+                    </a>
+                    
+                    <a href="{% url 'supervisor_dashboard' %}" class="menu-link">
+                        <i class="bi bi-cash-coin ms-2"></i>
+                        <span>Supervisor</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- REPORTS -->
+            <div class="menu-group">
+                <a class="menu-toggle" data-bs-toggle="collapse" href="#reportsMenu">
+                    <i class="bi bi-bar-chart"></i>
+                    <span>Reports</span>
+                    <i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+
+                <div class="collapse show" id="reportsMenu">
+                    <a href="{% url 'report_dashboard' %}" class="menu-link">
+                        <i class="bi bi-receipt ms-2"></i>
+                        <span>Report</span>
+                    </a>
+                </div>
+                 <div class="collapse show" id="reportsMenu">
+                    <a href="{% url 'payment_list' %}" class="menu-link">
+                        <i class="bi bi-receipt ms-2"></i>
+                        <span>Payment List</span>
+                    </a>
+                </div>
+                <div class="collapse show" id="reportsMenu">
+                    <a href="#" class="menu-link">
+                        <i class="bi bi-graph-up ms-2"></i>
+                        <span>Usage Reports</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div id="mainContent" class="flex-grow-1">
+            <!-- Top Navbar -->
+            <nav class="navbar navbar-light  border-bottom px-4" style='background-color: #7e81833b;'>
+                <div class="ms-auto d-flex align-items-center">
+                    <strong class="me-3"><a style="text-decoration: none; color: black;" href="{% url 'home' %}">{{ request.branch.name }}</a></strong>
+                    
+                </div>
+                 <div class="dropdown">
+                    <button class="btn btn-outline-danger btn-sm dropdown-toggle text-dark"
+                            type="button"
+                            id="dropdownMenu2"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        {{ request.user.email }}
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-end"
+                        aria-labelledby="dropdownMenu2">
+                        <li><a class="dropdown-item" href="{% url 'account_dashboard' %}">Account</a></li>
+                        <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
+                        <li>
+                            <a href="{% url 'account_logout' %}" class="dropdown-item">
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+            </nav>
+
+            <div class="">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                {% block content %}
+                {% endblock %}
+            </div>
+        </div>
+
+    </div>
+
+
+<!-- Bootstrap JS (Place before closing body) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Status Change Script -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    {% if show_status_modal %}
+        var modal = new bootstrap.Modal(
+            document.getElementById('statusModal')
+        );
+        modal.show();
+    {% endif %}
+
+});
+
+function submitWithReason() {
+
+    const reason = document.getElementById("reason_input").value.trim();
+
+    if (!reason) {
+        alert("Reason is required.");
+        return;
+    }
+
+    document.getElementById("status_reason").value = reason;
+    document.querySelector("form").submit();
+}
+</script>
+
+<script>
+document.getElementById("toggleSidebar").addEventListener("click", function() {
+    document.getElementById("sidebar").classList.toggle("collapsed");
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    const currentPath = window.location.pathname;
+
+    document.querySelectorAll(".menu-link").forEach(function(link) {
+        if (currentPath === link.getAttribute("href")) {
+            link.classList.add("active");
+
+            // Auto expand parent collapse
+            const collapseDiv = link.closest(".collapse");
+            if (collapseDiv) {
+                new bootstrap.Collapse(collapseDiv, {
+                    toggle: false
+                });
+            }
+        }
+    });
+
+});
+</script>
+
+</body>
+</html>

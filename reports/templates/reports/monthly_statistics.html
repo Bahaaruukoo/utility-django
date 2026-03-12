@@ -1,0 +1,66 @@
+{% extends "portal/base.html" %}
+{% block content %}
+
+<div class="container mt-1">
+
+    {% include 'reports/report_dashboard_header.html' %}
+    <h5 class="mb-1">Monthly Statistics</h5>
+
+    <form method="get" class="row g-3">
+
+        <div class="col-md-3">
+            <label class="form-label">Year</label>
+            <input type="number" name="year" value="{{ year }}" class="form-control">
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Month</label>
+            <select name="month" class="form-select">
+                <option value="">All</option>
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="1">April</option>
+                <option value="2">May</option>
+                <option value="3">June</option>
+                <option value="1">July</option>
+                <option value="2">August</option>
+                <option value="3">September</option>
+                <option value="1">October</option>
+                <option value="2">November</option>
+                <option value="3">December</option>
+            </select>
+        </div>
+
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+        </div>
+
+    </form>
+
+    <div class="mt-4">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Month</th>
+                    <th>Customers</th>
+                    <th>Meters</th>
+                    <th>Assignments</th>
+                    <th>Total Consumption</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ report.month }}{{ report.year }}</td>
+                    <td>{{ report.total_customers }}</td>
+                    <td>{{ report.total_meters }}</td>
+                    <td>{{ report.total_assignments }}</td>
+                    <td>{{ report.total_consumption }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

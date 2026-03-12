@@ -1,0 +1,76 @@
+{% extends "portal/base.html" %}
+{% block content %}
+
+<div class="container ">
+    {% include 'supervisor/supervisor_dashboard_header.html' %}
+
+    <h5>Pending Payment Reversals</h5>
+
+    <form method="get" class="mb-3">
+        <input type="text" name="search"
+               value="{{ search }}"
+               class="form-control"
+               placeholder="Search by reference, invoice, cashier...">
+    </form>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Reference</th>
+                <th>Invoice</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Requested By</th>
+                <th>Date</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for r in requests %}
+            <tr>
+                <td>{{ r.payment.reference_number }}</td>
+                <td>{{ r.payment.bill.invoice_number }}</td>
+                <td>{{ r.payment.customer }}</td>
+                <td>{{ r.payment.amount_paid }}</td>
+                <td>{{ r.requested_by }}</td>
+                <td>{{ r.requested_at }}</td>
+                <td>
+                    <a href="{% url 'review_reversal' r.id %}"
+                       class="btn btn-sm btn-primary">
+                        Review
+                    </a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="7">No pending requests.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {% if requests.has_other_pages %}
+        <nav>
+            <ul class="pagination">
+                {% if requests.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ requests.previous_page_number }}">Previous</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">{{ requests.number }}</span>
+                </li>
+
+                {% if requests.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ requests.next_page_number }}">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+
+</div>
+
+{% endblock %}

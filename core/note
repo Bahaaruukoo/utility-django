@@ -1,0 +1,15 @@
+Tenant-domain views (easy)
+log_audit(
+    request=request,
+    tenant=request.tenant,
+    action=AuditAction.USER_UPDATED,
+    target=user,
+)
+
+Platform admin / shared schema (explicit)
+log_audit(
+    request=request,
+    tenant=tenant,  # you already fetched it
+    action=AuditAction.INVITE_SENT,
+    metadata={"email": email},
+)

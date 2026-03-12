@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Debug User Tenant - Utility</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .debug-info {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        .debug-info h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .debug-info p {
+            margin: 10px 0;
+        }
+        .debug-info strong {
+            color: #555;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .success {
+            color: #28a745;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Debug User Tenant Membership</h1>
+        
+        <form method="get">
+            <div class="form-group">
+                <label for="email">User Email:</label>
+                <input type="email" id="email" name="email" value="{{ email }}" required>
+            </div>
+            <button type="submit" class="btn">Check User</button>
+        </form>
+        
+        {% if debug_info %}
+        <div class="debug-info">
+            <h2>Debug Information</h2>
+            
+            {% if debug_info.error %}
+            <p class="error"><strong>Error:</strong> {{ debug_info.error }}</p>
+            {% else %}
+            <p><strong>Email:</strong> {{ debug_info.user.email }}</p>
+            <p><strong>Is Active:</strong> 
+                {% if debug_info.is_active %}
+                <span class="success">Yes</span>
+                {% else %}
+                <span class="error">No</span>
+                {% endif %}
+            </p>
+            <p><strong>Is Staff:</strong> 
+                {% if debug_info.is_staff %}
+                <span class="success">Yes</span>
+                {% else %}
+                <span class="error">No</span>
+                {% endif %}
+            </p>
+            <p><strong>Is Platform Admin:</strong> 
+                {% if debug_info.is_platform_admin %}
+                <span class="success">Yes</span>
+                {% else %}
+                <span class="error">No</span>
+                {% endif %}
+            </p>
+            
+            <p><strong>Tenant Memberships:</strong> {{ debug_info.tenant_memberships|length }}</p>
+            
+            {% if debug_info.tenant_memberships %}
+            <ul>
+                {% for tm in debug_info.tenant_memberships %}
+                <li>
+                    <strong>Tenant:</strong> {{ tm.tenant.name }} ({{ tm.tenant.schema_name }})<br>
+                    <strong>Role:</strong> {{ tm.role }}<br>
+                    <strong>Domain:</strong> 
+                    {% for domain in tm.tenant.domains.all %}
+                        {{ domain.domain }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="error">User has no tenant memberships!</p>
+            {% endif %}
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <p style="margin-top: 20px;">
+            <a href="{% url 'create_tenant' %}">← Back to Create Tenant</a>
+        </p>
+    </div>
+</body>
+</html>

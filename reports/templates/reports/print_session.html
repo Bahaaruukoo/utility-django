@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Session Report</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #f5f5f5;
+        }
+
+        .report-container {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            max-width: 800px;
+            margin: auto;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        h3 {
+            margin-top: 25px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+        }
+
+        p {
+            margin: 6px 0;
+            font-size: 15px;
+        }
+
+        hr {
+            margin: 25px 0;
+        }
+
+        .print-btn {
+            margin-top: 20px;
+            padding: 10px 18px;
+            font-size: 15px;
+            background: #007bff;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .print-btn:hover {
+            background: #0056b3;
+        }
+
+        /* Print styling */
+        @media print {
+            body {
+                background: white;
+            }
+            .print-btn {
+                display: none;
+            }
+            .report-container {
+                box-shadow: none;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="report-container">
+
+    <h2>End of Day Report</h2>
+
+    <p><strong>Branch:</strong> {{ session.cashier.tenant.name }}</p>
+    <p><strong>Cashier:</strong> {{ session.cashier }}</p>
+    <p><strong>Session ID:</strong> {{ session.id }}</p>
+    <p><strong>Opened:</strong> {{ session.opened_at }}</p>
+    <p><strong>Closed:</strong> {{ session.closed_at }}</p>
+
+    <hr>
+
+    <h3>Financial Summary</h3>
+
+    <p><strong>Opening Balance:</strong> {{ session.opening_balance }}</p>
+    <p><strong>Total Cash:</strong> {{ report.total_cash }}</p>
+    <p><strong>Total Bank:</strong> {{ report.total_bank }}</p>
+    <p><strong>Total Mobile:</strong> {{ report.total_mobile }}</p>
+
+    <hr>
+
+    <p><strong>System Total:</strong> {{ report.system_total }}</p>
+    <p><strong>Physical Cash:</strong> {{ report.physical_cash }}</p>
+    <p><strong>Difference:</strong> {{ report.difference }}</p>
+
+    <hr>
+
+    <p><strong>Prepared By:</strong> {{ report.prepared_by }}</p>
+    <p><strong>Approved By:</strong> {{ report.approved_by }}</p>
+    <p><strong>Date:</strong> {{ report.prepared_at }}</p>
+
+    <button class="print-btn" onclick="window.print()">Print Report</button>
+
+</div>
+
+</body>
+</html>

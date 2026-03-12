@@ -1,0 +1,121 @@
+{% extends "portal/base.html" %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-gear-fill me-2"></i>
+                        Billing Settings
+                    </h4>
+                </div>
+
+                <div class="card-body">
+
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <div class="row g-3">
+
+                            <!-- Late Fee -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Late Fee Rate (%)
+                                </label>
+                                {{ form.late_fee_rate }}
+                                {% if form.late_fee_rate.errors %}
+                                    <div class="text-danger small">
+                                        {{ form.late_fee_rate.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Meter Rental -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Meter Rental Fee
+                                </label>
+                                {{ form.meter_rental_fee }}
+                            </div>
+
+                            <!-- Billing Cycle -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Billing Cycle (Days)
+                                </label>
+                                {{ form.billing_cycle_days }}
+                            </div>
+
+                            <!-- Overdue -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Bill Overdue After (Days)
+                                </label>
+                                {{ form.bill_overdue_in_days }}
+                            </div>
+
+                            <!-- Service Charge -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Service Charge Fee
+                                </label>
+                                {{ form.service_charge_fee }}
+                            </div>
+
+                            <!-- Bill Generation Date -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Bill Generation Day (1–28)
+                                </label>
+                                {{ form.bill_generation_date }}
+                            </div>
+
+                            <!-- Manual Generation -->
+                            <div class="col-12 mt-3">
+                                <div class="form-check form-switch">
+                                    {{ form.manual_bill_generation }}
+                                    <label class="form-check-label ms-2">
+                                        Manual Bill Generation
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'meter_reading_list' %}"
+                               class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+
+                            <button type="submit"
+                                    class="btn btn-primary px-4">
+                                Save Changes
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

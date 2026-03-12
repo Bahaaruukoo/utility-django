@@ -1,0 +1,62 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+  <h1>{{ title }}</h1>
+
+  {% if is_platform_admin %}
+    <form method="get" style="margin-bottom: 12px;">
+      <label>Tenant id filter:</label>
+      <input type="text" name="tenant" value="{{ tenant_filter }}" style="width: 180px;" />
+      <button type="submit" class="button">Filter</button>
+      <a class="button" href="{% url 'admin:active_sessions' %}">Clear</a>
+    </form>
+    <p style="color:#666;">(Optional) Type a tenant id to filter. You can later upgrade to a proper dropdown.</p>
+  {% endif %}
+
+  {% if not grouped %}
+    <p>No active sessions found.</p>
+  {% else %}
+    {% for user, sessions in grouped.items %}
+      <div style="margin: 18px 0; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <strong>{{ user.email }}</strong>
+            {% if user.first_name or user.last_name %}
+              — {{ user.first_name }} {{ user.last_name }}
+            {% endif %}
+          </div>
+
+          <form method="post" action="{% url 'admin:revoke_user_sessions' user.id %}" style="margin:0;">
+            {% csrf_token %}
+            <button class="button" type="submit">Revoke ALL sessions</button>
+          </form>
+        </div>
+
+        <table class="admin-table" style="width:100%; margin-top:10px;">
+          <thead>
+            <tr>
+              <th>Session</th>
+              <th>Expires</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in sessions %}
+              <tr>
+                <td style="font-family:monospace;">{{ s.session_key|slice:":12" }}…</td>
+                <td>{{ s.expires }}</td>
+                <td>
+                  <form method="post" action="{% url 'admin:revoke_session' s.session_key %}" style="margin:0;">
+                    {% csrf_token %}
+                    <button class="button" type="submit">Revoke</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endblock %}

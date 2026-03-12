@@ -1,0 +1,69 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+  <h1>{{ title }}</h1>
+
+  <p class="object-tools">
+    <a class="button" href="{{ back_url }}">{% trans "Back to Sessions" %}</a>
+  </p>
+
+  <div class="results">
+    <table id="result_list" class="adminlist">
+      <thead>
+        <tr>
+          <th scope="col">{% trans "User" %}</th>
+          <th scope="col">{% trans "Active sessions" %}</th>
+          <th scope="col">{% trans "Latest expiry" %}</th>
+          {% if show_branch %}
+            <th scope="col">{% trans "Branch" %}</th>
+          {% endif %}
+          <th scope="col">{% trans "Actions" %}</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for r in rows %}
+          <tr class="{% cycle 'row1' 'row2' %}">
+            <td>
+              <strong>{{ r.user.email }}</strong>
+              {% if r.user.get_full_name %}
+                <div class="quiet">{{ r.user.get_full_name }}</div>
+              {% else %}
+                {# If you're not using get_full_name on CustomUser #}
+                <div class="quiet">
+                  {{ r.user.first_name }} {{ r.user.middle_name }} {{ r.user.last_name }}
+                </div>
+              {% endif %}
+            </td>
+
+            <td>{{ r.count }}</td>
+
+            <td>
+              {% if r.last_expiry %}
+                {{ r.last_expiry|date:"Y-m-d H:i" }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+
+            {% if show_branch %}
+              <td>{{ r.branch_name|default:"-" }}</td>
+            {% endif %}
+
+            <td>
+              <a class="button" href="{{ r.view_url }}">{% trans "View" %}</a>
+              <a class="button deletelink" href="{{ r.revoke_url }}">{% trans "Revoke all" %}</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="{% if show_branch %}5{% else %}4{% endif %}">
+              {% trans "No active sessions." %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

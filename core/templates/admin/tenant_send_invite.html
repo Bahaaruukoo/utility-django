@@ -1,0 +1,24 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>{{ title }}</h1>
+
+<form method="post">
+  {% csrf_token %}
+
+  <div style="margin: 12px 0;">
+    <label>Email</label><br/>
+    <input type="email" name="email" required style="width: 360px;">
+  </div>
+
+  <div style="margin: 12px 0;">
+    <label>Role</label><br/>
+    <select name="role" required style="width: 360px;">
+      {% for r in roles %}
+        <option value="{{ r.id }}">{{ r.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <button class="default" type="submit">Send Invite</button>
+</form>
+{% endblock %}

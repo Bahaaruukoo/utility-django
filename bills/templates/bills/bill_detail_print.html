@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Invoice</title>
+    <!-- Bootstrap CSS --> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" > <!-- Bootstrap JS (optional, for modal functionality) --> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"> </script>
+</head>
+<body>
+
+
+
+<div class="  mt-2">
+
+    <div class="card shadow-lg border-0">
+
+        <!-- Invoice Header -->
+        <div class="card-header bg-secondary text-white d-flex justify-content-between">
+
+            <div>
+                <h4 class="mb-0">{{ request.tenant.name }}</h4>
+                <small>{{ bill.branch }}</small>
+            </div>
+
+            <div class="text-end">
+                <h5>INVOICE</h5>
+                <strong>#{{ bill.invoice_number }}</strong><br>
+                Issued: {{ bill.issue_date }}
+            </div>
+
+        </div>
+
+        <div class="card-body">
+
+            <!-- Customer Section -->
+            <div class="row mb-4">
+                <div class="col-6">
+                    <h6>Bill To: <strong>{{ bill.customer.full_name }}</strong></h6>
+   
+                    Address: {{ bill.customer.address }}<br>
+                    Phone: {{ bill.customer.phone }}<br>
+                    Type: {{ bill.customer.get_customer_type_display }}
+                </div>
+
+                <div class="col-6 text-md-end">
+                    Meter No: {{ bill.meter.meter_number }}<br>
+                    Bill Period: {{ bill.bill_period }}<br>
+                    Status:
+                    {% if bill.status == "UNSOLD" %}
+                        <span class="badge bg-warning text-dark">UNPAID</span>
+                    {% elif bill.status == "SOLD" %}
+                        <span class="badge bg-success">PAID</span>
+                    
+                    {% elif bill.status == "VOIDED" %}
+                        <span class="badge bg-danger">VOIDED</span>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <!-- Block Breakdown Table -->
+            <div class="mb-1 d-flex justify-content-between align-items-center">
+                <h6>Consumption Details</h6>
+                <!-- Example split danger button -->
+                {% if bill.status == "UNSOLD" %}
+                    <div class="dropdown">
+                        <button class="btn btn-danger btn-sm dropdown-toggle text-dark"
+                                type="button"
+                                data-bs-toggle="dropdown">
+                            Actions
+                        </button>
+
+                        <ul class="dropdown-menu dropdown-menu-end">
+
+                            
+                            <li>
+                                <button type="button"
+                                        class="dropdown-item text-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#voidModal">
+                                    Void Bill
+                                </button>
+                            </li>
+
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+            
+            {% if bill.status == "UNSOLD" %}
+                <div class="modal fade" id="voidModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">Void Bill</h5>
+                        <button type="button"
+                                class="btn-close btn-close-white"
+                                data-bs-dismiss="modal">
+                        </button>
+                    </div>
+                    
+                    <form method="post" action="{% url 'bill_void' bill.pk %}">
+                        {% csrf_token %}
+
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Reason for voiding</label>
+                                <textarea name="reason"
+                                        class="form-control"
+                                        required></textarea>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-danger">
+                                Confirm Void
+                            </button>
+                            <button type="button"
+                                    class="btn btn-secondary"
+                                    data-bs-dismiss="modal">
+                                Cancel
+                            </button>
+                        </div>
+
+                    </form>
+
+                    </div>
+                </div>
+                </div>
+           
+            {% endif %}
+
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Block</th>
+                            <th class="text-end">Units</th>
+                            <th class="text-end">Rate</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in bill.items.all %}
+                        <tr>
+                            <td>{{ item.block_name }}</td>
+                            <td class="text-end">{{ item.units }}</td>
+                            <td class="text-end">{{ item.rate }}</td>
+                            <td class="text-end">{{ item.amount }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex justify-content-end align-items-end mb-1"> 
+                Total consumption: {{ bill.reading.consumption }} units
+            </div>
+            <hr>
+
+            <!-- Additional Charges -->
+            <div class="row {% if bill.status == 'VOIDED' %} alert alert-danger {% endif %} ">
+                <div class="col-md-6">
+                    {% if bill.status == "VOIDED" %}
+                        <div class="alert alert-danger mt-3">
+                            <strong>VOIDED</strong><br>
+                            Reason: {{ bill.void_reason }}<br>
+                            Voided By: {{ bill.voided_by }}<br>
+                            Date: {{ bill.voided_at }}
+                        </div>
+                    {% endif %}
+                        
+                </div>
+                <div class="col-md-6 ">
+
+                    <table class="table table-sm ">
+                        <tr>
+                            <td>Meter Rental</td>
+                            <td class="text-end">{{ settings.meter_rental_fee }}</td>
+                        </tr>
+                        <tr>
+                            <td>Service Charge</td>
+                            <td class="text-end">{{ settings.service_charge_fee }}</td>
+                        </tr>
+                        <tr>
+                            <td>Operation Charge</td>
+                            <td class="text-end">{{ settings.operation_charge_fee }}</td>
+                        </tr>
+                        <tr class="fw-bold border-top">
+                            <td>Total</td>
+                            <td class="text-end">{{ bill.amount }}</td>
+                        </tr>
+                         <tr >
+                            <td class="">Late Penalty</td>
+                            <td class="text-end text-danger">{{ late_fee }}</td>
+                        </tr>
+                         <tr class="fw-bold border-top">
+                            <td>Total Payable</td>
+                            <td class="text-end">{{ total_payable }}</td>
+                        </tr>
+                    </table>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div>
+            <div class="  d-flex justify-content-between align-items-center">
+                <a href="{% url 'bill-detail' bill.id %}" class="btn btn-outline-secondary ms-3">
+                    Back
+                </a>
+                
+                <button onclick="window.print()" class="btn btn-sm btn-primary my-3 mx-3 px-3">
+                    Print Invoice
+                </button>
+                
+            </div>
+
+        </div>
+    </div>
+
+
+</div>
+
+<style>
+@media print {
+    .btn, .card-footer {
+        display: none;
+    }
+}
+</style>
+
+
+</body>
+</html>

@@ -1,0 +1,51 @@
+{% extends "portal/base.html" %}
+{% block content %}
+
+<div class="container mt-1">
+
+    {% include 'payments/cashier/cashier_dashboard_header.html' %}
+
+    <h5>Search Payment for Reversal</h5>
+
+    <form method="get" class="mb-3">
+        <input type="text" name="q" value="{{ query }}"
+               class="form-control"
+               placeholder="Search by reference, invoice, customer...">
+    </form>
+
+    {% if payments %}
+    <h6>Requested payment reversals</h6>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Reference</th>
+                <th>Invoice</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in payments %}
+            <tr>
+                <td>{{ p.reference_number }}</td>
+                <td>{{ p.bill.invoice_number }}</td>
+                <td>{{ p.customer }}</td>
+                <td>{{ p.amount_paid }}</td>
+                <td>{{ p.payment_date }}</td>
+                <td>
+                    <a href="{% url 'request_reversal' p.id %}"
+                       class="btn btn-sm btn-danger">
+                        Request Reversal
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+</div>
+
+{% endblock %}

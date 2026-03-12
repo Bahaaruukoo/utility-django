@@ -1,0 +1,125 @@
+{% extends "portal/base.html" %}
+
+{% block content %}
+
+<div class="container mt-1">
+    {% include 'reports/report_dashboard_header.html' %}
+
+
+    <!-- Metric Cards -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <div class="card p-3 shadow-sm text-center">
+                <h5>Total Billed</h5>
+                <p class="fs-4 fw-bold">{{ data.total_billed }}</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card p-3 shadow-sm text-center">
+                <h5>Total Collected</h5>
+                <p class="fs-4 fw-bold">{{ data.total_collected }}</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card p-3 shadow-sm text-center">
+                <h5>Outstanding</h5>
+                <p class="fs-4 fw-bold">{{ data.outstanding }}</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card p-3 shadow-sm text-center">
+                <h5>Collection Efficiency</h5>
+                <p class="fs-4 fw-bold">{{ data.efficiency }}%</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Charts -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-md-6">
+            <div class="card p-3 shadow-sm" style="height: 420px;">
+                <h5>Monthly Collections</h5>
+                <canvas id="collectionChart" style="height: 320px;"></canvas>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card p-3 shadow-sm" style="height: 420px;">
+                <h5>Payment Methods</h5>
+                <canvas id="methodChart" style="height: 320px;"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+/* ---------- Data ---------- */
+const monthly = JSON.parse('{{ monthly_json|escapejs }}');
+const methods = JSON.parse('{{ methods_json|escapejs }}');
+
+
+/* ---------- Monthly Collections Chart ---------- */
+const monthlyLabels = monthly.map(m => "Month " + m.month);
+const monthlyValues = monthly.map(m => m.total);
+
+new Chart(
+    document.getElementById("collectionChart").getContext("2d"),
+    {
+        type: "bar",
+        data: {
+            labels: monthlyLabels,
+            datasets: [{
+                label: "Collections",
+                data: monthlyValues,
+                backgroundColor: "#4CAF50"
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: true } }
+        }
+    }
+);
+
+
+/* ---------- Payment Methods Chart ---------- */
+const methodLabels = methods.map(m => m.payment_method);
+const methodValues = methods.map(m => m.total);
+
+new Chart(
+    document.getElementById("methodChart").getContext("2d"),
+    {
+        type: "pie",
+        data: {
+            labels: methodLabels,
+            datasets: [{
+                data: methodValues,
+                backgroundColor: [
+                    "#4CAF50",
+                    "#2196F3",
+                    "#FFC107",
+                    "#FF5722"
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    }
+);
+</script>
+
+{% endblock %}

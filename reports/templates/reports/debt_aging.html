@@ -1,0 +1,93 @@
+{% extends "portal/base.html" %}
+{% block content %}
+
+<div class="container mt-1">
+
+    {% include 'reports/report_dashboard_header.html' %}
+    <h5 class="mb-1">Debt Aging Report</h5>
+
+    <form method="get" class="card p-1 shadow-sm mb-1">
+        <div class="row align-items-end">
+
+            <div class=" col-3">
+                <label class="form-label">As of Date</label>
+                <input type="date" name="as_of_date" class="form-control" value="{{ request.GET.as_of_date }}">
+            </div>
+
+            <div class=" col-3">
+                <label class="form-label">Branch</label>
+                <select name="branch" class="form-select">
+                    <option value="">All</option>
+                    {% for branch in branches %}
+                    <option value="{{ branch.id }}" {% if request.GET.branch == branch.id|stringformat:"s" %}selected{% endif %}>
+                        {{ branch.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class=" col-2">
+                <button type="submit" class="btn btn-primary w-100">Generate</button>
+            </div>
+
+        </div>
+    </form>
+
+    <h5 class="mb-1">Summary</h5>
+
+    <div class="table-responsive mb-4">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>0–30 Days</th>
+                    <th>31–60 Days</th>
+                    <th>61–90 Days</th>
+                    <th>90+ Days</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ report.aging.0_30 }}</td>
+                    <td>{{ report.aging.31_60 }}</td>
+                    <td>{{ report.aging.61_90 }}</td>
+                    <td>{{ report.aging.90_plus }}</td>
+                    <td>{{ report.total_outstanding }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h5 class="mb-1">Customer Details</h5>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Customer</th>
+                    <th>Bill</th>
+                    <th>Issue Date</th>
+                    <th>Outstanding</th>
+                    <th>Age (days)</th>
+                    <th>Bucket</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for row in report.rows %}
+                <tr>
+                    <td>{{ row.customer }}</td>
+                    <td>{{ row.bill.invoice_number }}</td>
+                    <td>{{ row.bill.issue_date }}</td>
+                    <td>{{ row.outstanding }}</td>
+                    <td>{{ row.age_days }}</td>
+                    <td>{{ row.bucket }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

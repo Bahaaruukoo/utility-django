@@ -1,0 +1,75 @@
+{% extends "portal/base.html" %}
+{% block content %}
+
+<div class="container mt-1">
+
+    {% include 'payments/cashier/cashier_dashboard_header.html' %}
+
+    <h5>Requested payment reversals</h5>
+    
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Reference</th>
+                <th>Invoice</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Requested By</th>
+                <th>Date</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for r in requests %}
+            <tr>
+                <td>{{ r.payment.reference_number }}</td>
+                <td>{{ r.payment.bill.invoice_number }}</td>
+                <td>{{ r.payment.customer }}</td>
+                <td>{{ r.payment.amount_paid }}</td>
+                <td>{{ r.requested_by }}</td>
+                <td>{{ r.requested_at }}</td>
+                {% if r.status == 'PENDING' %}
+                    <td>
+                        <p
+                        class="btn btn-sm btn-primary">
+                            {{r.status}}
+                        </p>
+                    </td>
+                {% elif r.status == 'APPROVED' %}
+                    <td>
+                        <form action="{% url 'reverse_payment' r.payment.id %}" method="POST" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-success">
+                                {{ r.status }}
+                            </button>
+                        </form>
+                    </td>
+
+                {% elif r.status == 'CANCELED' %}
+                    <td>
+                        <p
+                        class="btn btn-sm btn-warning">
+                            {{r.status}}
+                        </p>
+                    </td>
+                {% else %}
+                    <td>
+                        <p
+                        class="">
+                            {{r.status}}
+                        </p>
+                    </td>
+                {% endif %}
+                
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="7">No pending requests.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

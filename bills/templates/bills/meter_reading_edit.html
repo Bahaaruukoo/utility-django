@@ -1,0 +1,41 @@
+{% extends "portal/base.html" %}
+
+{% block content %}
+
+<div class="container">
+    <h3>Edit Meter Reading</h3>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label class="form-label">Meter</label>
+            <input type="text"
+                   class="form-control"
+                   value="{{ reading.meter.meter_number }}"
+                   disabled>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Current Reading Value</label>
+            <input type="number"
+                   step="0.01"
+                   name="reading_value"
+                   class="form-control"
+                   value="{{ reading.reading_value }}"
+                   required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Update
+        </button>
+
+        <a href="{% url 'meter_reading_detail' reading.pk %}"
+           class="btn btn-secondary">
+            Cancel
+        </a>
+
+    </form>
+</div>
+
+{% endblock %}

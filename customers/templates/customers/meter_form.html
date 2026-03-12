@@ -1,0 +1,61 @@
+{% extends "portal/base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container">
+    {% include 'customers/meter_dashboard_header.html' %}
+
+    <div class="card shadow-sm">
+        <div class="card-header text-black">
+            <h5 class="mb-0">
+                {% if edit_mode %}
+                    Edit Meter
+                {% else %}
+                    Add New Meter
+                {% endif %}
+            </h5>
+        </div>
+
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">Meter Number</label>
+                    {{ form.meter_number|add_class:"form-control" }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Meter Size</label>
+                    {{ form.meter_size|add_class:"form-control" }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Meter Type</label>
+                    {{ form.meter_type|add_class:"form-select" }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Status</label>
+                    {{ form.status|add_class:"form-select" }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Initial Reading</label>
+                    {{ form.initial_reading|add_class:"form-control" }}
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'meter_list' %}" class="btn btn-secondary">
+                        Back
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        Save Meter
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

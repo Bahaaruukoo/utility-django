@@ -1,0 +1,116 @@
+{% extends "portal/base.html" %}
+
+{% block content %}
+<div class="container">
+    {% include 'customers/meter_dashboard_header.html' %}
+
+    <div class="d-flex justify-content-between mb-2">
+        <h4>Meters</h4>
+    </div>
+
+    <!-- Search -->
+    <form method="get" class="mb-3">
+        <div class="row g-2">
+            <div class="col-md-6">
+                <input type="text" name="q"
+                    value="{{ search|default:'' }}"
+                    class="form-control"
+                    placeholder="Search meter number, type, size">
+
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="ACTIVE" {% if status == "ACTIVE" %}selected{% endif %}>Active</option>
+                    <option value="FAULTY" {% if status == "FAULTY" %}selected{% endif %}>Faulty</option>
+                    <option value="REMOVED" {% if status == "REMOVED" %}selected{% endif %}>Removed</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-outline-secondary w-100">
+                    Filter
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Table -->
+    <table class="table table-striped table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Meter Number</th>
+                <th>Type</th>
+                <th>Size</th>
+                <th>Status</th>
+                <th>Initial Reading</th>
+                <th>Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for meter in page_obj %}
+            <tr>
+                <td>
+                    <a href="{% url 'meter_update' meter.pk %}?{{ request.GET.urlencode }}">
+                        {{ meter.meter_number }}
+                    </a>
+                </td>
+                <td>{{ meter.meter_type }}</td>
+                <td>{{ meter.meter_size }}</td>
+                <td>
+                    {% if meter.status == "ACTIVE" %}
+                        <span class="badge bg-success">Active</span>
+                    {% elif meter.status == "FAULTY" %}
+                        <span class="badge bg-warning">Faulty</span>
+                    {% else %}
+                        <span class="badge bg-danger">Removed</span>
+                    {% endif %}
+                </td>
+                <td>{{ meter.initial_reading }}</td>
+                <td>{{ meter.created_at_ddmmyyyy }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center text-muted">
+                    No meters found.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav>
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?page={{ page_obj.previous_page_number }}">
+                        Previous
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link"
+                       href="?page={{ num }}">
+                        {{ num }}
+                    </a>
+                </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?page={{ page_obj.next_page_number }}">
+                        Next
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+</div>
+{% endblock %}

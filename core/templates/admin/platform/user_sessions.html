@@ -1,0 +1,46 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+  <div class="app-core module">
+    <h1>{{ title }}</h1>
+
+    <p>
+      <strong>User:</strong> {{ target_user.email }}
+    </p>
+
+    <form method="post" action="{{ revoke_url }}" style="margin: 12px 0;">
+      {% csrf_token %}
+      <button type="submit" class="button" style="background:#ba2121;color:white;">
+        Revoke all sessions (force logout)
+      </button>
+    </form>
+
+    <h2>Active sessions</h2>
+
+    {% if sessions %}
+      <table class="adminlist" style="width:100%;">
+        <thead>
+          <tr>
+            <th>Session Key</th>
+            <th>Expires</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in sessions %}
+            <tr>
+              <td><code>{{ s.session_key }}</code></td>
+              <td>{{ s.expires }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No active sessions found for this user.</p>
+    {% endif %}
+
+    <p style="margin-top: 16px;">
+      <a class="button" href="{{ back_url }}">Back to users</a>
+    </p>
+  </div>
+{% endblock %}

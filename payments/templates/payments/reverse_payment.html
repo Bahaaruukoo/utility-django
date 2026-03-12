@@ -1,0 +1,37 @@
+{% extends "portal/base.html" %}
+
+{% block content %}
+
+<div class="container ">
+
+    <h5 class="text-danger">Reverse Payment</h5>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <p><strong>Invoice:</strong> {{ payment.bill.invoice_number }}</p>
+            <p><strong>Amount:</strong> {{ payment.amount_paid }}</p>
+            <p><strong>Method:</strong> {{ payment.payment_method }}</p>
+            <p><strong>Date:</strong> {{ payment.payment_date }}</p>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label class="form-label">Reason</label>
+            {{ form.reason }}
+        </div>
+
+        <button type="submit" class="btn btn-danger">
+            Confirm Reversal
+        </button>
+
+        <a href="{% url 'payment_detail' payment.id %}" class="btn btn-secondary">
+            Cancel
+        </a>
+    </form>
+
+</div>
+
+{% endblock %}

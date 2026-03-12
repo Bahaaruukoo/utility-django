@@ -1,0 +1,30 @@
+<h2>End of Day Report</h2>
+
+<p>Cashier: {{ session.cashier }}</p>
+<p>Session ID: {{ session.id }}</p>
+<p>Opened: {{ session.opened_at }}</p>
+<p>Closed: {{ session.closed_at }}</p>
+
+<hr>
+
+<p>Opening Balance: {{ session.opening_balance }}</p>
+
+<h3>Collections</h3>
+<p>Cash: {{ report.total_cash }}</p>
+<p>Bank: {{ report.total_bank }}</p>
+<p>Mobile: {{ report.total_mobile }}</p>
+
+<hr>
+
+<p>System Total: {{ report.system_total }}</p>
+<p>Physical Cash Counted: {{ report.physical_cash }}</p>
+<p>Difference: {{ report.difference }}</p>
+
+<hr>
+
+<p>Prepared By: {{ report.prepared_by }}</p>
+<p>Approved By: {{ report.approved_by }}</p>
+
+<script>
+window.print();
+</script>

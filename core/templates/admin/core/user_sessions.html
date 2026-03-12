@@ -1,0 +1,38 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+  <h1>Active sessions for {{ user_obj.email }}</h1>
+
+  <p>
+    <a class="button" href="../revoke-sessions/">Revoke all sessions</a>
+    <a class="button" href="../change/">Back to user</a>
+  </p>
+
+  {% if sessions %}
+    <table class="admin-table" style="width:100%; border-collapse: collapse;">
+      <thead>
+        <tr>
+          <th>Session key</th>
+          <th>Expires</th>
+          <th>IP</th>
+          <th>User agent</th>
+          <th>Last path</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in sessions %}
+          <tr>
+            <td style="font-family: monospace;">{{ s.session_key }}</td>
+            <td>{{ s.expire_date }}</td>
+            <td>{{ s.ip|default:"-" }}</td>
+            <td>{{ s.user_agent|default:"-" }}</td>
+            <td>{{ s.last_path|default:"-" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No active sessions found.</p>
+  {% endif %}
+{% endblock %}

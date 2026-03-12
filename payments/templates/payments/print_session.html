@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Session Report</title>
+</head>
+<body>
+
+<h2>End of Day Report</h2>
+
+<p><strong>Branch:</strong> {{ session.cashier.tenant.name }}</p>
+<p><strong>Cashier:</strong> {{ session.cashier }}</p>
+<p><strong>Session ID:</strong> {{ session.id }}</p>
+<p><strong>Opened:</strong> {{ session.opened_at }}</p>
+<p><strong>Closed:</strong> {{ session.closed_at }}</p>
+
+<hr>
+
+<h3>Financial Summary</h3>
+
+<p>Opening Balance: {{ session.opening_balance }}</p>
+<p>Total Cash: {{ report.total_cash }}</p>
+<p>Total Bank: {{ report.total_bank }}</p>
+<p>Total Mobile: {{ report.total_mobile }}</p>
+
+<hr>
+
+<p><strong>System Total:</strong> {{ report.system_total }}</p>
+<p><strong>Physical Cash:</strong> {{ report.physical_cash }}</p>
+<p><strong>Difference:</strong> {{ report.difference }}</p>
+
+<hr>
+
+<p>Prepared By: {{ report.prepared_by }}</p>
+<p>Approved By: {{ report.approved_by }}</p>
+<p>Date: {{ report.prepared_at }}</p>
+
+<script>
+window.print();
+</script>
+
+</body>
+</html>

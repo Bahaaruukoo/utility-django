@@ -1,0 +1,28 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+  <h1>{{ title }}</h1>
+
+  <p>
+    <a class="button" href="{{ back_url }}">Back</a>
+    <a class="button" href="{{ revoke_url }}">Revoke all sessions</a>
+  </p>
+
+  <table class="adminlist">
+    <thead>
+      <tr>
+        <th>Session key</th>
+        <th>Expires</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in sessions %}
+        <tr>
+          <td>{{ s.session_key }}</td>
+          <td>{{ s.expire_date }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="2">No active sessions for this user.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

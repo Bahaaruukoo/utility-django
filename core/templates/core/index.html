@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Home - Utility</title>
+</head>
+<body>
+    <header>
+        <h1>Welcome to the Utility App</h1>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'secret' %}">Secret</a></li>
+                {% if user.is_authenticated and user.is_platform_admin %}
+                    <h4>Platform ..Admin</h4>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <h2>Home Page</h2>
+        <p>This is the home page of the Utility App.</p>
+    </main>
+    <footer>
+        <p>&copy; 2023 Utility App</p>
+    </footer>
+</body>
+</html>

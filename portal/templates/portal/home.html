@@ -1,0 +1,43 @@
+{% extends "portal/base.html" %}
+
+{% block content %}
+
+<h4 class="mb-4">Dashboard</h4>
+
+<div class="container row g-4">
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 text-center p-3">
+            <i class="bi bi-people text-primary fs-2"></i>
+            <h4 class="mt-2">{{ total_customers }}</h4>
+            <small class="text-muted">Total Customers</small>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 text-center p-3">
+            <i class="bi bi-speedometer2 text-success fs-2"></i>
+            <h4 class="mt-2">{{ total_meters }}</h4>
+            <small class="text-muted">Total Meters</small>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 text-center p-3">
+            <i class="bi bi-link-45deg text-warning fs-2"></i>
+            <h4 class="mt-2">{{ active_assignments }}</h4>
+            <small class="text-muted">Active Assignments</small>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 text-center p-3">
+            <i class="bi bi-receipt text-danger fs-2"></i>
+            <h4 class="mt-2">{{ unpaid_bills }}</h4>
+            <small class="text-muted">Unpaid Bills</small>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

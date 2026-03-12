@@ -1,0 +1,92 @@
+{% extends "portal/base.html" %}
+{% block content %}
+
+<div class="container mt-2">
+
+    <h5 class="mb-3">Session Financial Report</h5>
+
+    <form method="post" class="card p-3 mb-3">
+        {% csrf_token %}
+
+        <div class="row g-3">
+
+            <div class="col-md-3">
+                <label class="form-label">Start Date</label>
+                {{ form.start_date }}
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">End Date</label>
+                {{ form.end_date }}
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Branch</label>
+                {{ form.branch }}
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-primary w-100">Generate</button>
+            </div>
+
+        </div>
+    </form>
+
+    {% if sessions %}
+
+        <h5 class="mt-3">Closed Sessions</h5>
+
+        <table class="table table-bordered table-sm align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Session</th>
+                    <th>Cashier</th>
+                    <th>Branch</th>
+                    <th>Opened</th>
+                    <th>Closed</th>
+                    <th>Opening Balance</th>
+                    <th>Collected</th>
+                    <th>Closing Balance</th>
+                    <th>Physical Cash</th>
+                    <th>Difference</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for s in sessions %}
+                <tr>
+                    <td>{{ s.id }}</td>
+                    <td>
+                        <a href="{% url 'report_cashier_sessions_print' s.id %}"
+                           target="_blank" rel="noopener noreferrer">
+                            {{ s.cashier }}
+                        </a>
+                    </td>
+                    <td>{{ s.branch }}</td>
+                    <td>{{ s.opened_at }}</td>
+                    <td>{{ s.closed_at }}</td>
+                    <td>{{ s.opening_balance }}</td>
+                    <td>{{ s.total_collected|default:0 }}</td>
+                    <td>{{ s.closing_balance }}</td>
+                    <td>{{ s.physical_cash }}</td>
+                    <td>{{ s.cash_difference }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h5 class="mt-4">Totals</h5>
+
+        <ul class="list-unstyled">
+            <li>Cash: {{ totals.total_cash }}</li>
+            <li>Bank: {{ totals.total_bank }}</li>
+            <li>Mobile: {{ totals.total_mobile }}</li>
+            <li>Card: {{ totals.total_card }}</li>
+            <li class="mt-2"><strong>Total: {{ totals.grand_total }}</strong></li>
+        </ul>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

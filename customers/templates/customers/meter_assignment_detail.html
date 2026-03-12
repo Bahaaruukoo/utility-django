@@ -1,0 +1,112 @@
+{% extends "portal/base.html" %}
+
+{% block content %}
+<div class="container">
+    {% include 'customers/meter_dashboard_header.html' %}
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                Assignment Details
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Customer Info -->
+            <h6 class="text-muted">Customer</h6>
+            <p>
+                <strong>{{ assignment.customer.full_name }}</strong><br>
+                Customer No: {{ assignment.customer.customer_no }}<br>
+                Phone: {{ assignment.customer.phone }}
+            </p>
+
+            <hr>
+
+            <!-- Meter Info -->
+            <h6 class="text-muted">Meter</h6>
+            <p>
+                Meter Number: <strong>{{ assignment.meter.meter_number }}</strong><br>
+                Type: {{ assignment.meter.meter_type }}<br>
+                Size: {{ assignment.meter.meter_size }}<br>
+                Status: {{ assignment.meter.status }}
+            </p>
+
+            <hr>
+
+            <!-- Installation Info -->
+            <h6 class="text-muted">Installation</h6>
+            <p>
+                Branch: {{ assignment.branch }}<br>
+                Address: {{ assignment.installation_address }}<br>
+                {{ assignment.city }}, {{ assignment.state }}, {{ assignment.country }}<br>
+
+                {% if assignment.latitude and assignment.longitude %}
+                    Coordinates:
+                    {{ assignment.latitude }},
+                    {{ assignment.longitude }}
+                {% endif %}
+            </p>
+
+            <hr>
+
+            <!-- Dates -->
+            <h6 class="text-muted">Dates</h6>
+            <p>
+                Installation Date: {{ assignment.installation_date }}<br>
+                Start Date: {{ assignment.start_date }}<br>
+                End Date:
+                {% if assignment.end_date %}
+                    {{ assignment.end_date }}
+                {% else %}
+                    —
+                {% endif %}
+            </p>
+
+            <hr>
+
+            <!-- Status -->
+            <h6 class="text-muted">Status</h6>
+            <p>
+                {% if assignment.is_active %}
+                    <span class="badge bg-success">Active</span>
+                {% else %}
+                    <span class="badge bg-secondary">Closed</span>
+                {% endif %}
+            </p>
+
+            <hr>
+
+            <!-- Audit -->
+            <h6 class="text-muted">Audit</h6>
+            <p>
+                Assigned By: {{ assignment.assigned_by }}<br>
+                
+            </p>
+
+            <div class="d-flex justify-content-between mt-3">
+                <a href="{% url 'meter_assignment_list' %}" class="btn btn-secondary">
+                    Back to List
+                </a>
+
+                {% if assignment.is_active %}
+                    <a href="{% url 'close_assignment' assignment.pk %}"
+                       class="btn btn-danger">
+                        Close Assignment
+                    </a>
+                {% endif %}
+                {% if assignment.is_active %}
+                    
+                {% endif %}
+                <a href="{% url 'meter_assignment_update' assignment.pk %}"
+                    class="btn btn-warning">
+                        Edit Assignment
+                    </a>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

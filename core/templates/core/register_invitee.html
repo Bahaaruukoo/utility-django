@@ -1,0 +1,45 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+  <h2>Register for {{ invitation.tenant.name }}</h2>
+
+  <p><b>Email:</b> {{ invitation.email }}</p>
+  <p><b>Role:</b> {{ invitation.role.name }}</p>
+
+  <form method="post" style="max-width: 420px;">
+    {% csrf_token %}
+
+    {{ form.non_field_errors }}
+
+    <div style="margin-bottom: 12px;">
+      <label>First name</label><br>
+      {{ form.first_name }}
+      {{ form.first_name.errors }}
+    </div>
+
+    <div style="margin-bottom: 12px;">
+      <label>Middle name</label><br>
+      {{ form.middle_name }}
+      {{ form.middle_name.errors }}
+    </div>
+
+    <div style="margin-bottom: 12px;">
+      <label>Last name</label><br>
+      {{ form.last_name }}
+      {{ form.last_name.errors }}
+    </div>
+
+    <div style="margin-bottom: 12px;">
+      <label>Password</label><br>
+      {{ form.password1 }}
+      {{ form.password1.errors }}
+    </div>
+
+    <div style="margin-bottom: 12px;">
+      <label>Confirm password</label><br>
+      {{ form.password2 }}
+      {{ form.password2.errors }}
+    </div>
+
+    <button type="submit" class="default">Create account</button>
+  </form>
+{% endblock %}

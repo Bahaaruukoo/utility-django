@@ -1,0 +1,45 @@
+{% extends "portal/base.html" %}
+{% block content %}
+
+<div class="container">
+    {% include 'supervisor/supervisor_dashboard_header.html' %}
+
+    <h5>Payment Reversal Requested</h5>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <p><strong>Reference:</strong> {{ req.payment.reference_number }}</p>
+            <p><strong>Invoice:</strong> {{ req.payment.bill.invoice_number }}</p>
+            <p><strong>Customer:</strong> {{ req.payment.customer }}</p>
+            <p><strong>Amount:</strong> {{ req.payment.amount_paid }}</p>
+            <p><strong>Requested By:</strong> {{ req.requested_by }}</p>
+            <p><strong>Reason:</strong> {{ req.reason }}</p>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label>Supervisor Note (optional)</label>
+            <textarea name="note" class="form-control"></textarea>
+        </div>
+
+        <button name="action" value="approve"
+                class="btn btn-success">
+            Approve
+        </button>
+
+        <button name="action" value="reject"
+                class="btn btn-danger">
+            Reject
+        </button>
+
+        <a href="{% url 'pending_reversals' %}"
+           class="btn btn-secondary">
+            Cancel
+        </a>
+    </form>
+
+</div>
+
+{% endblock %}

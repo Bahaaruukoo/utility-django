@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Open Cashier Session</h2>
+
+<form method="post" action="{% url 'open_session' %}">
+    {% csrf_token %}
+    
+    <label>Opening Balance:</label>
+    <input type="number" step="0.01" name="opening_balance" required>
+
+    <button type="submit">Open Session</button>
+</form>
+
+{% endblock %}

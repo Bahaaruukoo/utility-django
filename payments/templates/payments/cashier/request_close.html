@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Close Session</h2>
+
+<p>Session ID: {{ session.id }}</p>
+<p>Total Collected: {{ total }}</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label>Physical Cash Counted:</label>
+    <input type="number" step="0.01" name="physical_cash" required>
+
+    <button type="submit">Submit for Approval</button>
+</form>
+
+{% endblock %}

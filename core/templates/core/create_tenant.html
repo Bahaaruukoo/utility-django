@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Create Tenant - Utility</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 40px;
+        }
+        .form-section {
+            margin-bottom: 40px;
+        }
+        .form-section h2 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .form-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+        .form-group .help-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+        .form-group .errorlist {
+            list-style: none;
+            padding: 0;
+            margin: 8px 0 0 0;
+        }
+        .form-group .errorlist li {
+            color: #e74c3c;
+            font-size: 13px;
+            padding: 4px 0;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        .messages {
+            margin-bottom: 20px;
+        }
+        .messages ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .messages li {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .messages .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .messages .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .messages .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Create New Tenant</h1>
+        </div>
+        <div class="content">
+            {% if messages %}
+            <div class="messages">
+                <ul>
+                    {% for message in messages %}
+                    <li class="{{ message.tags }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-section">
+                    <h2>Tenant Information</h2>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.tenant_name.id_for_label }}">{{ form.tenant_name.label }}</label>
+                        {{ form.tenant_name }}
+                        {% if form.tenant_name.help_text %}
+                        <span class="help-text">{{ form.tenant_name.help_text }}</span>
+                        {% endif %}
+                        {{ form.tenant_name.errors }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.schema_name.id_for_label }}">{{ form.schema_name.label }}</label>
+                        {{ form.schema_name }}
+                        {% if form.schema_name.help_text %}
+                        <span class="help-text">{{ form.schema_name.help_text }}</span>
+                        {% endif %}
+                        {{ form.schema_name.errors }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.domain.id_for_label }}">{{ form.domain.label }}</label>
+                        {{ form.domain }}
+                        {% if form.domain.help_text %}
+                        <span class="help-text">{{ form.domain.help_text }}</span>
+                        {% endif %}
+                        {{ form.domain.errors }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            {{ form.on_trial }}
+                            {{ form.on_trial.label }}
+                        </label>
+                        {% if form.on_trial.help_text %}
+                        <span class="help-text">{{ form.on_trial.help_text }}</span>
+                        {% endif %}
+                        {{ form.on_trial.errors }}
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h2>Admin User Information</h2>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.admin_email.id_for_label }}">{{ form.admin_email.label }}</label>
+                        {{ form.admin_email }}
+                        {% if form.admin_email.help_text %}
+                        <span class="help-text">{{ form.admin_email.help_text }}</span>
+                        {% endif %}
+                        {{ form.admin_email.errors }}
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ form.admin_password.id_for_label }}">{{ form.admin_password.label }}</label>
+                            {{ form.admin_password }}
+                            {% if form.admin_password.help_text %}
+                            <span class="help-text">{{ form.admin_password.help_text }}</span>
+                            {% endif %}
+                            {{ form.admin_password.errors }}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.admin_password_confirm.id_for_label }}">{{ form.admin_password_confirm.label }}</label>
+                            {{ form.admin_password_confirm }}
+                            {% if form.admin_password_confirm.help_text %}
+                            <span class="help-text">{{ form.admin_password_confirm.help_text }}</span>
+                            {% endif %}
+                            {{ form.admin_password_confirm.errors }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.admin_phone.id_for_label }}">{{ form.admin_phone.label }}</label>
+                        {{ form.admin_phone }}
+                        {% if form.admin_phone.help_text %}
+                        <span class="help-text">{{ form.admin_phone.help_text }}</span>
+                        {% endif %}
+                        {{ form.admin_phone.errors }}
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn">Create Tenant</button>
+                
+                <a href="{% url 'home' %}" class="back-link">← Back to Home</a>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

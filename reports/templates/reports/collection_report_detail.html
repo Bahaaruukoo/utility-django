@@ -1,0 +1,87 @@
+{% extends "portal/base.html" %}
+{% block content %}
+
+<div class="container mt-1">
+
+    {% include 'reports/report_dashboard_header.html' %}
+    <div class="mb-2"><strong style="font-size:20px;">Collection Report </strong> Branch- {{ report.branch|default:"All Branches" }}, Period- {{ report.collection_month }} </div>
+
+    <h5 class="mb-2">Summary</h5>
+
+    <div class="row g-3 mb-2">
+        <div class="col-md-2">
+            <div class="alert alert-primary text-center">
+                <strong>Total Payments</strong><br>
+                {{ report.payment_count }}
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="alert alert-success text-center">
+                <strong>Total Collected</strong><br>
+                {{ report.total_collected }}
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="alert alert-info text-center">
+                <strong>Cash</strong><br>
+                {{ report.total_cash }}
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="alert alert-warning text-center">
+                <strong>Bank</strong><br>
+                {{ report.total_bank }}
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="alert alert-secondary text-center">
+                <strong>Mobile</strong><br>
+                {{ report.total_mobile }}
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="alert alert-dark text-center">
+                <strong>Card</strong><br>
+                {{ report.total_card }}
+            </div>
+        </div>
+    </div>
+
+    <h5 class="mb-1">Payments</h5>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Date</th>
+                    <th>Invoice</th>
+                    <th>Customer</th>
+                    <th>Method</th>
+                    <th>Amount</th>
+                    <th>Reference</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for payment in report.payments.all %}
+                <tr>
+                    <td>{{ payment.payment_date }}</td>
+                    <td>{{ payment.bill.invoice_number }}</td>
+                    <td>{{ payment.customer }}</td>
+                    <td>{{ payment.payment_method }}</td>
+                    <td>{{ payment.amount_paid }}</td>
+                    <td>{{ payment.reference_number }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

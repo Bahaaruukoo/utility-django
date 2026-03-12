@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Select Tenant - Utility</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .tenant-selection {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group ul {
+            list-style: none;
+            padding: 0;
+        }
+        .form-group li {
+            margin-bottom: 15px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .form-group li:hover {
+            border-color: #007bff;
+            background-color: #e7f3ff;
+        }
+        .form-group input[type="radio"] {
+            margin-right: 10px;
+        }
+        .form-group label.tenant-label {
+            display: inline;
+            font-weight: normal;
+            cursor: pointer;
+            margin: 0;
+        }
+        .tenant-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .tenant-info {
+            font-size: 0.9em;
+            color: #666;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .messages {
+            margin-bottom: 20px;
+        }
+        .messages li {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .messages .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .messages .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="tenant-selection">
+        <h1>Select Tenant</h1>
+        
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        
+        <p>You have access to multiple tenants. Please select which tenant you would like to access:</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ form.tenant.errors }}
+                <ul>
+                    {% for tenant in tenants %}
+                    <li>
+                        <label class="tenant-label">
+                            <input type="radio" name="tenant" value="{{ tenant.id }}" required>
+                            <div>
+                                <div class="tenant-name">{{ tenant.name }}</div>
+                                <div class="tenant-info">Schema: {{ tenant.schema_name }}</div>
+                            </div>
+                        </label>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <button type="submit">Continue</button>
+        </form>
+    </div>
+</body>
+</html>

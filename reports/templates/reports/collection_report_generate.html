@@ -1,0 +1,42 @@
+{% extends "portal/base.html" %}
+{% block content %}
+
+<div class="container mt-1">
+
+    {% include 'reports/report_dashboard_header.html' %}
+
+    <h5 class="mb-2">Generate Collection Report</h5>
+
+    <form method="post" class="card p-3 shadow-sm">
+        {% csrf_token %}
+
+        <div class="row align-items-end g-3">
+
+            <div class="col-md-3">
+                <label class="form-label">Year</label>
+                {{ form.year }}
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Month</label>
+                {{ form.month }}
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Branch (optional)</label>
+                {{ form.branch }}
+            </div>
+
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    Generate
+                </button>
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

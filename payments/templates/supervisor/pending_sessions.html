@@ -1,0 +1,83 @@
+{% extends "portal/base.html" %}
+{% block content %}
+
+<div class="container ">
+    {% include 'supervisor/supervisor_dashboard_header.html' %}
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="fw-bold">Sessions to be closed</h5>
+        <span class="badge bg-secondary fs-6">
+            Branch: {{ request.branch.name }}
+        </span>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Session ID</th>
+                            <th>Cashier</th>
+                            <th>Opened</th>
+                            <th>Opening Balance</th>
+                            <th>Closing Balance</th>
+                            <th>Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for session in sessions %}
+                        <tr>
+                            <td class="fw-semibold">
+                                #{{ session.id }}
+                            </td>
+
+                            <td>
+                                {{ session.cashier.first_name }} {{ session.cashier.middle_name }} {{ session.cashier.last_name }}
+                            </td>
+
+                            <td>
+                                {{ session.opened_at }}
+                            </td>
+
+                            <td>
+                                {{ session.opening_balance }}
+                            </td>
+
+                            <td>
+                                {{ session.closing_balance }}
+                            </td>
+
+                            <td>
+                                <span class="badge bg-warning text-dark">
+                                    {{ session.status }}
+                                </span>
+                            </td>
+
+                            <td class="text-end">
+                                <a href="{% url 'session_approval' session.id %}"
+                                   class="btn btn-sm btn-primary">
+                                    Review
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                No pending sessions.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

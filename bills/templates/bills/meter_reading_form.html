@@ -1,0 +1,28 @@
+{% extends "portal/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container">
+    <h4>Enter Meter Reading</h4>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label class="form-label">Meter</label>
+            {{ form.meter }}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Reading Value</label>
+            {{ form.reading_value }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Save Reading
+        </button>
+    </form>
+</div>
+
+{% endblock %}

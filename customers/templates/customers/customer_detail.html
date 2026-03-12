@@ -1,0 +1,138 @@
+{% extends "portal/base.html" %}
+
+{% block content %}
+<div class="container">
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">
+                Customer Detail - {{ customer.customer_no }}
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-6">
+                    <p><strong>Full Name:</strong> {{ customer.full_name }}</p>
+                    <p><strong>Phone:</strong> {{ customer.phone }}</p>
+                    <p><strong>Email:</strong> {{ customer.email }}</p>
+                    <p><strong>Customer Type:</strong> {{ customer.get_customer_type_display }}</p>
+                </div>
+
+                <div class="col-md-6">
+                    <p><strong>ID Number:</strong> {{ customer.id_number }}</p>
+                    <p><strong>Status:</strong>
+                        {% if customer.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inactive</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>Registered By:</strong> {{ customer.registered_by }}</p>
+                    <p><strong>Registered On:</strong> {{ customer.created_at|date:"Y-m-d" }}</p>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class= "row mt-4">
+                 <div class="col-md-3 ">
+                    <h6>Woreda</h6>
+                    <p>{{ customer.woreda }}</p>
+                </div>
+                <div class="col-md-3 ">
+                    <h6>Kebele</h6>
+                    <p> {{ customer.kebele }}</p>
+                </div>
+                <div class="col-md-5">
+                    <h6>Address</h6>
+                    <p>{{ customer.address }}</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Meter -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            Active Meter
+        </div>
+        <div class="card-body">
+
+            {% if active_assignment %}
+                <p><strong>Meter Number:</strong> {{ active_assignment.meter.meter_number }}</p>
+                <p><strong>Meter Type:</strong> {{ active_assignment.meter.meter_type }}</p>
+                <p><strong>Branch:</strong> {{ active_assignment.branch }}</p>
+                <p><strong>Installation Date:</strong> {{ active_assignment.installation_date }}</p>
+                <p><strong>Installation Address:</strong> {{ active_assignment.installation_address }}</p>
+            {% else %}
+                <p class="text-muted">No active meter assigned.</p>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- Assignment History -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-secondary text-white">
+            Meter Assignment History
+        </div>
+        <div class="card-body">
+
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr>
+                        <th>Meter</th>
+                        <th>Branch</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in assignment_history %}
+                        <tr>
+                            <td>{{ a.meter.meter_number }}</td>
+                            <td>{{ a.branch }}</td>
+                            <td>{{ a.start_date }}</td>
+                            <td>{{ a.end_date|default:"-" }}</td>
+                            <td>
+                                {% if a.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Closed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">
+                                No assignment history.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+    <div class= "d-flex justify-content-between mt-3 mb-3">
+        <div class="">
+                <a href="{{ request.GET.next|default:'{% url "customer_list" %}' }}"
+                    class="btn btn-secondary">
+                    ← Back to List
+                </a>
+            </div>
+                
+        <div class="">
+            <a class="btn btn-warning" 
+            href="{% url 'customer_update' customer.customer_no %}?next={{ request.GET.next|urlencode }}">
+                Edit Customer
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
