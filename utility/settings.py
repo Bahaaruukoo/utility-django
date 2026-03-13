@@ -254,7 +254,7 @@ LOG_FILE = os.path.join(LOG_DIR, 'system.log')
    
 
 
-LOG_TO_FILE = os.environ.get("LOG_TO_FILE", "0") == "1"
+LOG_TO_FILE = os.environ.get("LOG_TO_FILE", "0") == "0"
 
 LOG_DIR = Path(BASE_DIR) / "logs"
 if LOG_TO_FILE:
