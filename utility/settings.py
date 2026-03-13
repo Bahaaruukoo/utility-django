@@ -119,16 +119,25 @@ MESSAGE_TAGS = {messages.ERROR: 'danger',}
 # ------------------------------------------------------------------------------
 
 if DEVELOPMENT_MODE is True:
+    import dj_database_url
+
     DATABASES = {
-        "default": dj_database_url.parse(os.environ.get("DATABASE_URL")),
+        "default": dj_database_url.config(
+            default=os.environ.get("DATABASE_URL")
+        )
     }
+    DATABASES["default"]["ENGINE"] = "django_tenants.postgresql_backend"
+
 elif len(sys.argv) > 0 and sys.argv[1] != 'collectstatic':
     if os.getenv("DATABASE_URL", None) is None:
         raise Exception("DATABASE_URL environment variable not defined")
     DATABASES = {
-        "default": dj_database_url.parse(os.environ.get("DATABASE_URL")),
+        "default": dj_database_url.config(
+            default=os.environ.get("DATABASE_URL")     
+        )
     }
-
+    DATABASES["default"]["ENGINE"] = "django_tenants.postgresql_backend"
+    
 DATABASE_ROUTERS = (
     'django_tenants.routers.TenantSyncRouter',
 )
