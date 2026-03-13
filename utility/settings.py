@@ -250,8 +250,17 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 LOG_DIR = os.path.join(BASE_DIR, 'logs')
 LOG_FILE = os.path.join(LOG_DIR, 'system.log')
 
-LOGGING = {
 
+   
+
+
+LOG_TO_FILE = os.environ.get("LOG_TO_FILE", "0") == "1"
+
+LOG_DIR = Path(BASE_DIR) / "logs"
+if LOG_TO_FILE:
+    LOG_DIR.mkdir(exist_ok=True)
+
+LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
 
@@ -269,22 +278,34 @@ LOGGING = {
     },
 
     "handlers": {
-        "file": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": os.path.join(BASE_DIR, "logs/system.log"),
-            "maxBytes": 1024 * 1024 * 10,
-            "backupCount": 5,
+        "console": {
+            "class": "logging.StreamHandler",
             "formatter": "standard",
-            "filters": ["context"],
-        }
+        },
+        **(
+            {
+                "file": {
+                    "class": "logging.handlers.RotatingFileHandler",
+                    "filename": LOG_DIR / "system.log",
+                    "maxBytes": 10 * 1024 * 1024,
+                    "backupCount": 5,
+                    "formatter": "standard",
+                    "filters": ["context"],
+                }
+            }
+            if LOG_TO_FILE
+            else {}
+        ),
     },
 
     "loggers": {
         "app": {
-            "handlers": ["file"],
+            "handlers": ["file"] if LOG_TO_FILE else ["console"],
             "level": "INFO",
             "propagate": False,
         }
-    }
+    },
 }
+
+
 
