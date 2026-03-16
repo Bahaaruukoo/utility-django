@@ -87,15 +87,16 @@ class TenantUserRoleInlineFormSet(BaseInlineFormSet):
             seen.add(key)
 
             # prevent duplicates already in DB (ignore current instance)
-            if TenantUserRole.objects.filter(
-                user=user,
-                role=role,
-                tenant=tenant
-            ).exclude(pk=instance.pk).exists():
-                raise ValidationError(
-                    f"{role.name} role already assigned to this user."
-                )
-            
+            if user and user.pk:  # ensure user is saved
+                if TenantUserRole.objects.filter(
+                    user=user,
+                    role=role,
+                    tenant=tenant
+                ).exclude(pk=instance.pk).exists():
+                    raise ValidationError(
+                        f"{role.name} role already assigned to this user."
+                    )
+                
 class TenantUserRoleInline(admin.TabularInline):
     model = TenantUserRole
     formset = TenantUserRoleInlineFormSet
