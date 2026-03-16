@@ -29,18 +29,16 @@ from .models import Bill
 @login_required
 def bill_list(request):
 
-
-    from django.db.models.signals import post_save
-    instance = Bill.objects.first()
-
-    post_save.send(
-        sender=Bill,
-        instance=instance,
-        created=False
-    ) 
     tenant = request.tenant
     branch = getattr(request, "branch", None)
     today = timezone.now()
+
+    from django.db.models.signals import post_save
+
+    post_save.send(
+        sender=Bill,
+        tenant=tenant
+    ) 
 
     # -------------------------------
     # Month / Year Selection
