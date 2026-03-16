@@ -25,6 +25,7 @@ from core.models_audit import AuditLog
 from core.session.admin_mixins import UserSessionAdminMixin
 from core.session.session_utils import (list_active_sessions_for_user,
                                         revoke_all_sessions_for_user)
+from tenant_manager.models import Tenant
 from tenant_utils.api.models import APIKey
 from tenant_utils.models import BranchMembership
 
@@ -696,23 +697,43 @@ class SessionAdmin(admin.ModelAdmin):
         messages.success(request, f"Revoked {deleted} session(s) for {user.email}.")
         return redirect(reverse(f"{self.admin_site.name}:tenant_sessions_for_user", args=[user.id]))
 
-
 class APIKeyAdmin(admin.ModelAdmin):
     list_display = ("name", "key", "tenant")
     search_fields = ("name",)
     ordering = ("-created_at",)
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        # show only active sessions by default
-        qs = qs.filter(is_active=True)
+        qs = super().get_queryset(request).filter(is_active=True)
 
         if is_tenant_admin(request):
             qs = qs.filter(tenant=request.tenant)
-        return qs
-    
 
-   
+        return qs
+
+    # Hide tenant field for tenant admins
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+
+        if is_tenant_admin(request):
+            if "tenant" in form.base_fields:
+                form.base_fields["tenant"].widget = admin.widgets.AdminHiddenInput()
+
+        return form
+
+    # Automatically attach tenant
+    def save_model(self, request, obj, form, change):
+        if is_tenant_admin(request):
+            obj.tenant = request.tenant
+
+        super().save_model(request, obj, form, change)
+
+    # Restrict tenant queryset (for super admins)
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "tenant" and is_tenant_admin(request):
+            kwargs["queryset"] = Tenant.objects.filter(id=request.tenant.id)
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
     def has_module_permission(self, request):
         return is_tenant_admin(request) or is_branch_admin(request)
 
@@ -728,7 +749,6 @@ class APIKeyAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return is_tenant_admin(request) or is_branch_admin(request)
     
-
 
 tenant_admin_site.register(AuditLog, AuditLogAdmin)
 tenant_admin_site.register(CustomUser, TenantUserAdmin)
