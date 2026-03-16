@@ -10,7 +10,7 @@ from tenant_utils.views import \
 
 urlpatterns = [
     # Tenant home pages
-    # path("", core_views.home, name="home"),
+    path("", core_views.home, name="home"),
 
     path("b/<slug:branch_code>/", select_branch, name="select_branch"),
     # ✅ Tenant admin (TENANT DOMAINS ONLY)
