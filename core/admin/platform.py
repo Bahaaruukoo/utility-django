@@ -198,7 +198,7 @@ def build_invite_url(request, *, token, tenant_domain: str | None):
     if ":" in host:
         full_host = host
     else:
-        if port and port not in ("80", "443"):
+        if port and port not in ("80", "8080", "443"):
             full_host = f"{host}:{port}"
         else:
             full_host = host
