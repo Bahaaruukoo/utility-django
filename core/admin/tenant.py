@@ -697,6 +697,8 @@ class SessionAdmin(admin.ModelAdmin):
         messages.success(request, f"Revoked {deleted} session(s) for {user.email}.")
         return redirect(reverse(f"{self.admin_site.name}:tenant_sessions_for_user", args=[user.id]))
 
+
+
 class APIKeyAdmin(admin.ModelAdmin):
     list_display = ("name", "key", "tenant")
     search_fields = ("name",)
@@ -705,29 +707,29 @@ class APIKeyAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request).filter(is_active=True)
 
+        # tenant admins should only see their tenant data
         if is_tenant_admin(request):
             qs = qs.filter(tenant=request.tenant)
 
         return qs
 
-    # Hide tenant field for tenant admins
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
+    # remove tenant field from form for tenant admins
+    def get_fields(self, request, obj=None):
+        fields = list(super().get_fields(request, obj))
 
-        if is_tenant_admin(request):
-            if "tenant" in form.base_fields:
-                form.base_fields["tenant"].widget = admin.widgets.AdminHiddenInput()
+        if is_tenant_admin(request) and "tenant" in fields:
+            fields.remove("tenant")
 
-        return form
+        return fields
 
-    # Automatically attach tenant
+    # automatically attach tenant when saving
     def save_model(self, request, obj, form, change):
         if is_tenant_admin(request):
             obj.tenant = request.tenant
 
         super().save_model(request, obj, form, change)
 
-    # Restrict tenant queryset (for super admins)
+    # restrict tenant choices (for safety)
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "tenant" and is_tenant_admin(request):
             kwargs["queryset"] = Tenant.objects.filter(id=request.tenant.id)
@@ -749,7 +751,6 @@ class APIKeyAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return is_tenant_admin(request) or is_branch_admin(request)
     
-
 tenant_admin_site.register(AuditLog, AuditLogAdmin)
 tenant_admin_site.register(CustomUser, TenantUserAdmin)
 tenant_admin_site.register(TenantRolePermission, TenantRolePermissionTenantAdmin)
