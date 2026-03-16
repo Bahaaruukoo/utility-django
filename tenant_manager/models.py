@@ -18,7 +18,7 @@ class Tenant(TenantMixin):
 
     def __str__(self):
         return self.name'''
-    auto_create_schema = False  # disable automatic schema creation
+    auto_create_schema = True
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
