@@ -19,6 +19,7 @@ class Tenant(TenantMixin):
     def __str__(self):
         return self.name'''
     auto_create_schema = True
+    auto_drop_schema = True  # Automatically drop schema on tenant deletion
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
