@@ -705,7 +705,12 @@ class APIKeyAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         # show only active sessions by default
-        return qs.filter(is_active=True)
+        qs = qs.filter(is_active=True)
+
+        if is_tenant_admin(request):
+            qs = qs.filter(tenant=request.tenant)
+        return qs
+    
 
    
     def has_module_permission(self, request):
