@@ -14,10 +14,8 @@ from bills.models import BillingSettings, BlockRate
 @receiver(post_schema_sync) #@receiver(post_migrate)
 def create_default_billing_settings(sender, tenant, **kwargs):
 
-    # Only run after bills app migration
-    if sender.name != "bills":
-        return
-
+    print("------------------------------------------", tenant)
+    
     # Skip public schema
     if connection.schema_name == get_public_schema_name():
         return
@@ -56,10 +54,10 @@ def create_default_block_rates(sender, tenant, **kwargs):
     only if no block rates exist.
     """
 
-    # Run only for bills app
+    '''# Run only for bills app
     if sender.name != "bills":
         return
-
+    '''
     # Skip public schema
     if connection.schema_name == get_public_schema_name():
         return
