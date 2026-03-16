@@ -29,8 +29,8 @@ def create_default_billing_settings(sender, **kwargs):
     if "bills_billingsettings" not in tables:
         return
 
-    if "tenant_utils_branch" not in tables:
-        return
+    '''if "tenant_utils_branch" not in tables:
+        return'''
 
     if BillingSettings.objects.exists():
         return
@@ -46,7 +46,7 @@ def create_default_billing_settings(sender, **kwargs):
         bill_generation_date=5,
     )
 
-    
+
 @receiver(post_migrate)
 def create_default_block_rates(sender, **kwargs):
     """
