@@ -4,6 +4,7 @@ from django.apps import apps
 from django.db import connection, transaction
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
+from django_tenants.utils import get_public_schema_name
 
 from bills.models import BillingSettings, BlockRate
 
@@ -11,22 +12,30 @@ from bills.models import BillingSettings, BlockRate
 
 @receiver(post_migrate)
 def create_default_billing_settings(sender, **kwargs):
-    BillingSettings = apps.get_model("bills", "BillingSettings")
 
-    table_name = BillingSettings._meta.db_table
-
-    if table_name not in connection.introspection.table_names():
-        return  # table not created yet
-
+    # Only run after bills app migration
     if sender.name != "bills":
         return
-  
-    # Do not populate if tenant already has data
-    if BillingSettings.objects.filter().exists():
+
+    # Skip public schema
+    if connection.schema_name == get_public_schema_name():
+        return
+
+    BillingSettings = apps.get_model("bills", "BillingSettings")
+
+    tables = connection.introspection.table_names()
+
+    # Ensure required tables exist
+    if "bills_billingsettings" not in tables:
+        return
+
+    if "tenant_utils_branch" not in tables:
+        return
+
+    if BillingSettings.objects.exists():
         return
 
     BillingSettings.objects.create(
-        #tenant=tenant,
         late_fee_rate=0.0,
         meter_rental_fee=15.00,
         billing_cycle_days=30,
@@ -37,13 +46,7 @@ def create_default_billing_settings(sender, **kwargs):
         bill_generation_date=5,
     )
 
-from django.apps import apps
-from django.db import connection, transaction
-from django.db.models.signals import post_migrate
-from django.dispatch import receiver
-from django_tenants.utils import get_public_schema_name
-
-
+    
 @receiver(post_migrate)
 def create_default_block_rates(sender, **kwargs):
     """
