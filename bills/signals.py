@@ -4,14 +4,15 @@ from django.apps import apps
 from django.db import connection, transaction
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
+from django_tenants.signals import post_schema_sync
 from django_tenants.utils import get_public_schema_name
 
 from bills.models import BillingSettings, BlockRate
 
 #tenant = request.tenant
 
-@receiver(post_migrate)
-def create_default_billing_settings(sender, **kwargs):
+@receiver(post_schema_sync) #@receiver(post_migrate)
+def create_default_billing_settings(sender, tenant, **kwargs):
 
     # Only run after bills app migration
     if sender.name != "bills":
@@ -36,6 +37,7 @@ def create_default_billing_settings(sender, **kwargs):
         return
 
     BillingSettings.objects.create(
+        tenant = tenant,
         late_fee_rate=0.0,
         meter_rental_fee=15.00,
         billing_cycle_days=30,
@@ -47,8 +49,8 @@ def create_default_billing_settings(sender, **kwargs):
     )
 
 
-@receiver(post_migrate)
-def create_default_block_rates(sender, **kwargs):
+@receiver(post_schema_sync) #@receiver(post_migrate)
+def create_default_block_rates(sender, tenant, **kwargs):
     """
     Populate default 6 block rates for each tenant
     only if no block rates exist.
@@ -86,6 +88,7 @@ def create_default_block_rates(sender, **kwargs):
     with transaction.atomic():
         for block in sample_data:
             BlockRate.objects.create(
+                tenant=tenant,
                 name=block[0],
                 start_unit=block[1],
                 end_unit=block[2],
