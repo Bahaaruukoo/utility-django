@@ -253,7 +253,6 @@ PORT = ':8000'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'email.utilityko@gmail.com'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
@@ -261,17 +260,15 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = 'email.utilityko@gmail.com'
-EMAIL_HOST_PASSWORD = 'ydgx drgm irxp umrn'
-
+#EMAIL_HOST_USER = 'email.utilityko@gmail.com'
+#EMAIL_HOST_PASSWORD = 'ydgx drgm irxp umrn'
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 LOG_DIR = os.path.join(BASE_DIR, 'logs')
 LOG_FILE = os.path.join(LOG_DIR, 'system.log')
-
-
-   
 
 
 LOG_TO_FILE = os.environ.get("LOG_TO_FILE", "0") == "0"
