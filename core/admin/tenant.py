@@ -263,11 +263,11 @@ class TenantUserAdmin(BaseUserAdmin):
 
         obj.tenant = request.tenant
         obj.is_platform_admin = False
-        obj.is_staff = True  # tenant admin-managed users can access tenant admin if needed
+        #obj.is_staff = True  # tenant admin-managed users can access tenant admin if needed
         super().save_model(request, obj, form, change)
 
     def has_module_permission(self, request): 
-        return True # is_tenant_admin(request)
+        return is_tenant_admin(request)
 
     def has_view_permission(self, request, obj=None): 
         return is_tenant_admin(request) or is_branch_admin(request)

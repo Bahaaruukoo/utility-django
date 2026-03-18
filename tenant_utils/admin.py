@@ -117,7 +117,7 @@ class TenantScopedAdminMixin(admin.ModelAdmin):
             return qs
 
         if tenant:
-            return qs.filter(tenant=tenant)
+            return qs #.filter(tenant=tenant)
 
         return qs.none()
 

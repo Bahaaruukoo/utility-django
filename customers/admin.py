@@ -6,7 +6,7 @@ from customers.models import Customer, Kebele, Woreda
 
 
 # Register your models here.
-@admin.register(Customer, site=tenant_admin_site)
+#@admin.register(Customer, site=tenant_admin_site)
 class CustomerAdmin(admin.ModelAdmin):
     list_display = (
         "customer_no",
@@ -41,6 +41,9 @@ class CustomerAdmin(admin.ModelAdmin):
             
         super().save_model(request, obj, form, change)
 
+    def has_module_permission(self, request):
+        return True
+
     def has_delete_permission(self, request, obj=None):
         return False  # soft delete only
 
@@ -72,6 +75,8 @@ class WoredaAdmin(admin.ModelAdmin):
             obj.registered_by = request.user
 
         super().save_model(request, obj, form, change)
+    def has_module_permission(self, request):
+        return True
 
     def has_delete_permission(self, request, obj=None):
         """
@@ -114,6 +119,9 @@ class KebeleAdmin(admin.ModelAdmin):
 
         super().save_model(request, obj, form, change)
 
+    def has_module_permission(self, request):
+        return True
+
     def has_delete_permission(self, request, obj=None):
         """
         Disable hard delete.
@@ -125,5 +133,3 @@ class KebeleAdmin(admin.ModelAdmin):
         return True
     def has_change_permission(self, request, obj = ...):
         return True
-
-        

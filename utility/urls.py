@@ -4,13 +4,16 @@ from django.urls import include, path
 from core import views as core_views
 from core.admin import platform_admin_site  # ✅ platform admin site (custom)
 from core.admin import tenant_admin_site  # ✅ tenant admin site (custom)
+from portal.views import landing_page
 from tenant_manager.admin import tenant_domain_admin_site
 from tenant_utils.views import \
     select_branch  # ✅ tenant domain admin site (custom)
 
 urlpatterns = [
     # Tenant home pages
-    path("", core_views.home, name="home"),
+
+    path("", landing_page, name="landing"),
+    #path("page/", core_views.home, name="home"),
 
     path("b/<slug:branch_code>/", select_branch, name="select_branch"),
     # ✅ Tenant admin (TENANT DOMAINS ONLY)
@@ -26,6 +29,9 @@ urlpatterns = [
 
     path("api/", include("tenant_utils.api.urls")),
     # Invitations / registration
+    path("portal/", include("portal.urls")),
+    path("payments/", include("payments.urls")),
+    path("reports/", include("reports.urls")),
     path("", include("core.urls")),
 
 ]

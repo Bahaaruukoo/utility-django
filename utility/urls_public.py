@@ -4,12 +4,14 @@ from django.urls import include, path
 from core import views as core_views
 from core.admin import platform_admin_site  # ✅ platform admin site (custom)
 from core.admin_sites import platform_admin_site, tenant_admin_site
+from portal.views import landing_page
 from tenant_manager.admin import \
     tenant_domain_admin_site  # ✅ tenant domain admin site (custom)
 
 urlpatterns = [
     # Home pages (public)
-    path("", core_views.home, name="home"),
+    path("", landing_page, name="landing"),
+    #path("home/", core_views.home, name="home"),
 
     # ✅ Platform admin (PUBLIC ONLY)
     path("admin/", platform_admin_site.urls),

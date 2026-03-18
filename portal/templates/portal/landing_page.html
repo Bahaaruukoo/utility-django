@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grid Command Center</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; }
+
+    /* Premium Water Theme */
+    .hero {
+      background: linear-gradient(135deg, #06283d, #1363df);
+      color: white;
+      padding: 120px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at center, rgba(255,255,255,0.08), transparent 70%);
+      animation: pulse 6s infinite linear;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .dark-section {
+      background: #071a2c;
+      color: #e6f1f8;
+    }
+
+    .dark-card {
+      background: #0f2e4d;
+      border: 1px solid #1e4f75;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
+
+    .stat-box {
+      background: #123a5c;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+    }
+
+    .section-title { margin-bottom: 40px; }
+
+    .icon-circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0dcaf0, #0d6efd);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      margin: auto;
+      margin-bottom: 15px;
+    }
+
+    .architecture-box {
+      border: 1px solid #1e4f75;
+      padding: 20px;
+      border-radius: 10px;
+      background: #0f2e4d;
+      text-align: center;
+    }
+
+    footer { background: #02111f; color: #aaa; padding: 20px 0; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="#">Grid Command Center</a>
+  </div>
+  <div class="nav-item me-4 text-white"><a class="nav-link" href="{% url 'account_login' %}">Sign In</a></div>
+</nav>
+
+<!-- Hero -->
+<section class="hero text-center">
+  <div class="container">
+    <h1 class="display-4 fw-bold">Grid Command Center</h1>
+    <p class="lead">Centralized Utility Billing & Operations Platform</p>
+    <p>Secure. Scalable. Built for Utility Organizations.</p>
+  </div>
+</section>
+
+<!-- Dashboard -->
+<section class="dark-section py-5">
+  <div class="container">
+    <h2 class="text-center section-title">Operational Dashboard</h2>
+
+    <div class="row mb-4">
+      <div class="col-md-3"><div class="stat-box text-center"><h6>Total Usage</h6><h4>550.8M m³</h4></div></div>
+      <div class="col-md-3"><div class="stat-box text-center"><h6>Utilities</h6><h4>>1000</h4></div></div>
+      <div class="col-md-3"><div class="stat-box text-center"><h6>Active Meters</h6><h4>1.800.000</h4></div></div>
+      <div class="col-md-3"><div class="stat-box text-center"><h6>Status</h6><h4 class="text-success">Stable</h4></div></div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="dark-card p-3">
+          <h6>Water Consumption Trend</h6>
+          <canvas id="chart"></canvas>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="dark-card p-3">
+          <h6>Top Consumptions</h6>
+          <ul>
+            <li>Utility A – 44 m³</li>
+            <li>Utility B – 39,50 m³</li>
+            <li>Utility C – 14,20 m³</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Architecture -->
+<section class="py-5">
+  <div class="container text-center">
+    <h2 class="section-title">System Architecture</h2>
+    <div class="row text-white">
+      <div class="col-md-3"><div class="architecture-box">Smart Meters</div></div>
+      <div class="col-md-3"><div class="architecture-box">Data Processing</div></div>
+      <div class="col-md-3"><div class="architecture-box">Billing Engine</div></div>
+      <div class="col-md-3"><div class="architecture-box">Command Dashboard</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Security -->
+<section class="dark-section py-5">
+  <div class="container text-center">
+    <h2 class="section-title">Security & Compliance</h2>
+    <div class="row text-white">
+      <div class="col-md-3"><h6>Isolation</h6><p>Tenant data separation</p></div>
+      <div class="col-md-3"><h6>RBAC</h6><p>Role-based access</p></div>
+      <div class="col-md-3"><h6>Audit</h6><p>Full activity logs</p></div>
+      <div class="col-md-3"><h6>Encryption</h6><p>Secure data handling</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="text-center">
+  <div class="container">
+    <p>&copy; 2026 Grid Command Center</p>
+  </div>
+</footer>
+
+<script>
+const ctx = document.getElementById('chart');
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: ['Jan','Feb','Mar','Apr','May'],
+    datasets: [{
+      label: 'Water Usage',
+      data: [300, 450, 400, 500, 600],
+      borderWidth: 2
+    }]
+  }
+});
+</script>
+
+</body>
+</html>

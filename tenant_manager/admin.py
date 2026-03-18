@@ -40,7 +40,7 @@ def public_schema():
                 # Fallback: restore schema name directly
                 connection.set_schema(original_schema)
 
-
+'''
 class TenantAdminSite(admin.AdminSite):
     """
     Single admin site used on BOTH:
@@ -73,7 +73,7 @@ class TenantAdminSite(admin.AdminSite):
             self.register(Domain)
         except AlreadyRegistered:
             pass
-
+    
     def has_permission(self, request):
         """
         Django admin calls this everywhere to decide if user can enter admin.
@@ -137,6 +137,134 @@ class TenantAdminSite(admin.AdminSite):
             messages.error(request, "You do not have permission to access this admin site.")
             return HttpResponseForbidden("You do not have permission to access this admin site.")
         return super().index(request, extra_context=extra_context)
+    '''
     
+class NoDeleteAdminMixin:
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if "delete_selected" in actions:
+            del actions["delete_selected"]
+        return actions
+    
+class TenantAdmin( NoDeleteAdminMixin, admin.ModelAdmin):
+    list_display = ("name", "schema_name")
+
+
+class DomainAdmin(admin.ModelAdmin):
+    list_display = ("domain", "tenant")
+
+class TenantAdminSite( admin.AdminSite):
+    """
+    Single admin site used on BOTH:
+      - public domain  -> platform admin
+      - tenant domains -> tenant admin
+
+    Rules:
+      - Platform admins can access from anywhere.
+      - Tenant admins:
+          - must be on a tenant domain (request.tenant exists)
+          - must have membership.role == "TENANT_ADMIN" for that tenant
+          - must be is_staff == True
+
+    Deletion:
+      - Disabled for ALL users.
+    """
+    site_header = "Admin"
+    site_title = "Admin"
+    index_title = "Administration"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        try:
+            self.register(Tenant, TenantAdmin)
+        except AlreadyRegistered:
+            pass
+
+        try:
+            self.register(Domain, DomainAdmin)
+        except AlreadyRegistered:
+            pass
+    
+    def has_permission(self, request):
+        """
+        Django admin calls this everywhere to decide if user can enter admin.
+        """
+        user = getattr(request, "user", None)
+        if not user or not user.is_authenticated:
+            return False
+
+        # Platform admin can access from public or any tenant domain
+        if getattr(user, "is_platform_admin", False):
+            return True
+
+        tenant = getattr(request, "tenant", None)
+        if tenant is None:
+            return False
+
+        if not getattr(user, "is_staff", False):
+            return False
+
+        with public_schema():
+            if not hasattr(user, "tenant_memberships"):
+                return False
+
+            if getattr(user, "tenant_id", None) != tenant.id:
+                return False
+
+            membership = user.tenant_memberships.filter(tenant_id=tenant.id).first()
+
+            if not membership:
+                logger.warning(
+                    "User %s attempted tenant admin on %s (id=%s) without membership",
+                    getattr(user, "email", user.pk),
+                    getattr(tenant, "name", "Tenant"),
+                    tenant.id,
+                )
+                return False
+
+            return getattr(membership, "role", None) == "TENANT_ADMIN"
+
+    def login(self, request, extra_context=None):
+        """
+        Do NOT block the login form itself.
+        """
+        user = getattr(request, "user", None)
+        if user and user.is_authenticated:
+            if not self.has_permission(request):
+                messages.error(request, "You do not have permission to access this admin site.")
+                return redirect("home")
+        return super().login(request, extra_context=extra_context)
+
+    def index(self, request, extra_context=None):
+        if not self.has_permission(request):
+            messages.error(request, "You do not have permission to access this admin site.")
+            return HttpResponseForbidden("You do not have permission to access this admin site.")
+        return super().index(request, extra_context=extra_context)
+
+    # ----------------------------------------------------
+    # Disable delete globally
+    # ----------------------------------------------------
+
+    def each_context(self, request):
+        """
+        Remove delete_selected action globally.
+        """
+        context = super().each_context(request)
+        context["actions"] = None
+        return context
+
+    def get_actions(self, request):
+        """
+        Remove bulk delete action.
+        """
+        actions = super().get_actions(request)
+        if "delete_selected" in actions:
+            del actions["delete_selected"]
+        return actions
 
 tenant_domain_admin_site = TenantAdminSite(name="tenant_admin_site")

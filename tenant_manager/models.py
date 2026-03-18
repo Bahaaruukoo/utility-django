@@ -1,5 +1,6 @@
 from django.db import connection, models, transaction
 from django_tenants.models import DomainMixin, TenantMixin
+from django_tenants.utils import schema_context
 
 
 class Tenant(TenantMixin):
@@ -29,6 +30,15 @@ class Tenant(TenantMixin):
             cursor.execute(f'CREATE SCHEMA IF NOT EXISTS "{self.schema_name}"')
 
         self.create_schema(check_if_exists=True)
+    def delete(self, *args, **kwargs):
+        schema = self.schema_name
+
+        # Drop tenant schema first
+        with connection.cursor() as cursor:
+            cursor.execute(f'DROP SCHEMA IF EXISTS "{schema}" CASCADE')
+
+        # Delete tenant row without triggering collector
+        type(self).objects.filter(pk=self.pk).delete()
 
 class Domain(DomainMixin):
     pass

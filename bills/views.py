@@ -33,13 +33,7 @@ def bill_list(request):
     branch = getattr(request, "branch", None)
     today = timezone.now()
 
-    from django.db.models.signals import post_save
-
-    post_save.send(
-        sender=Bill,
-        tenant=tenant
-    ) 
-
+    
     # -------------------------------
     # Month / Year Selection
     # -------------------------------

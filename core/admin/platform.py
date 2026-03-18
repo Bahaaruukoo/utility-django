@@ -20,6 +20,7 @@ from core.models import (CustomUser, Invitation, Profile, Role, RoleTemplate,
 from core.models_audit import AuditAction, AuditLog
 from core.session.admin_mixins import UserSessionAdminMixin
 from tenant_manager.models import Tenant
+from tenant_utils.services import EmailService
 
 # core/admin_platform.py (or your platform admin file)
 
@@ -234,6 +235,7 @@ class TenantPlatformAdmin(admin.ModelAdmin):
 
     #@audit(AuditAction.INVITE_SENT)
     def send_invite_view(self, request, tenant_id, *args, **kwargs):
+        emailService = EmailService()
         tenant = get_object_or_404(Tenant, pk=tenant_id)
         if request.method == "POST":
             email = request.POST.get("email")
@@ -258,7 +260,7 @@ class TenantPlatformAdmin(admin.ModelAdmin):
                     email=email,
                     tenant=tenant,
                     used=False,
-                ).exclude(expires_at__lt=timezone.now()).exists()
+                ).exclude(expires_at__lt=timezone.now()) #.exists()
 
                 if active_invite_exists:
                     messages.error(request, "An active (non-expired) invitation already exists for this email.")
@@ -299,7 +301,7 @@ class TenantPlatformAdmin(admin.ModelAdmin):
                     f"Register here:\n{invite_link}\n"
                 )
                 send_mail(subject, message, "noreply@example.com", [invite.email])
-
+                emailService.send_simple_email(subject=subject, message=message, recipient_list=[invite.email])
                 self.message_user(request, f"Invitation sent to {email}", level=messages.SUCCESS)
                 return redirect("platform_admin:tenant_manager_tenant_changelist")
 
@@ -532,26 +534,23 @@ class PlatformSessionAdmin(admin.ModelAdmin):
 class RoleTemplateAdmin(admin.ModelAdmin):
 
     list_display = ("name", "description")
-
     filter_horizontal = ("permissions",)
-
     search_fields = ("name",)
-
     ordering = ("name",)
 
-    # only platform admins should manage templates
+    '''# only platform admins should manage templates
     def has_module_permission(self, request):
-        return request.user.is_platform_admin
+        return  request.user and request.user.is_platform_admin
 
     def has_view_permission(self, request, obj=None):
-        return request.user.is_platform_admin
+        return  request.user and request.user.is_platform_admin
 
     def has_add_permission(self, request):
-        return request.user.is_platform_admin
+        return  request.user and request.user.is_platform_admin
 
     def has_change_permission(self, request, obj=None):
-            return request.user.is_platform_admin
+            return  request.user and request.user.is_platform_admin
 
     def has_delete_permission(self, request, obj=None):
-        return request.user.is_platform_admin
+        return  request.user and request.user.is_platform_admin'''
 
