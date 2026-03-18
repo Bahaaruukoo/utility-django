@@ -5,11 +5,13 @@ import io
 
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
+from django.db import connection
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import path
 from django.utils import timezone
+from django_tenants.utils import get_public_schema_name
 from rangefilter.filters import DateRangeFilter
 from reportlab.lib import colors, pagesizes
 from reportlab.lib.pagesizes import A4
@@ -49,15 +51,27 @@ def is_branch_admin(request) -> bool:
         return False
 
     tenant = getattr(request, "tenant", None)
-    if not tenant:
+    branch = getattr(request, "branch", None)
+    
+     # 🚨 CRITICAL: do not query tenant tables in public schema
+    if not tenant or connection.schema_name == get_public_schema_name():
         return False
-
-    return BranchMembership.objects.filter(
+    
+    if not branch:
+        return False
+    
+    member_to_branchs = BranchMembership.objects.filter(
         tenant=tenant,
         user=u,
         is_branch_admin=True,
         is_active=True,
-    ).exists()
+    )
+    print(member_to_branchs)
+    if member_to_branchs:
+        member_to_a_branch = member_to_branchs.first()
+        return branch == member_to_a_branch.branch
+    
+    return False
 
 
 def branch_admin_branch_ids(request) -> list[int]:
@@ -170,6 +184,9 @@ class BranchAdmin(TenantScopedAdminMixin, admin.ModelAdmin):
 
     # Branch admins should not see/manage branches
     def has_module_permission(self, request):
+        tenant = getattr(request, "tenant", None)
+        if not tenant:
+            return False
         if is_branch_admin(request):
             return False
         return bool(getattr(request.user, "is_platform_admin", False) or is_tenant_admin(request))
