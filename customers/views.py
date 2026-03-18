@@ -248,6 +248,7 @@ def meter_list(request):
  
     # 🔐 Branch restriction
     #if is_branch_admin(request) and branch:
+    ''' 
     if not is_tenant_admin(request) and branch:
         assigned_meter_ids = MeterAssignment.objects.filter(
             tenant=tenant,
@@ -255,8 +256,8 @@ def meter_list(request):
             is_active=True
         ).values_list("meter_id", flat=True)
 
-        meters = meters.filter(id__in=assigned_meter_ids)
-    
+        meters_under_active_assignment = Meter.objects.filter(id__in=assigned_meter_ids)
+    '''
     # 🔎 Search
     search = request.GET.get("q")
     if not search:
