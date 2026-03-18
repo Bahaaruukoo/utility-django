@@ -13,8 +13,6 @@ from bills.models import BillingSettings, BlockRate
 
 @receiver(post_schema_sync) #@receiver(post_migrate)
 def create_default_billing_settings(sender, tenant, **kwargs):
-
-    print("------------------------------------------", tenant)
     
     # Skip public schema
     if connection.schema_name == get_public_schema_name():
