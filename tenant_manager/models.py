@@ -30,6 +30,7 @@ class Tenant(TenantMixin):
             cursor.execute(f'CREATE SCHEMA IF NOT EXISTS "{self.schema_name}"')
 
         self.create_schema(check_if_exists=True)
+        
     def delete(self, *args, **kwargs):
         schema = self.schema_name
 

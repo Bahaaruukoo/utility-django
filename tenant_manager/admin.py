@@ -138,9 +138,55 @@ class TenantAdminSite(admin.AdminSite):
             return HttpResponseForbidden("You do not have permission to access this admin site.")
         return super().index(request, extra_context=extra_context)
     '''
-    
-class NoDeleteAdminMixin:
 
+@admin.action(description="Delete tenant (safe)")
+def safe_delete_tenant(modeladmin, request, queryset):
+    from django.db import connection
+
+    for tenant in queryset:
+        schema = tenant.schema_name
+
+        with connection.cursor() as cursor:
+
+            # 1️⃣ Drop schema
+            cursor.execute(f'DROP SCHEMA IF EXISTS "{schema}" CASCADE')
+
+            # 2️⃣ Fix M2M tables (CRITICAL)
+            cursor.execute("""
+                DELETE FROM core_tenantrolepermission_permissions
+                WHERE tenantrolepermission_id IN (
+                    SELECT id FROM core_tenantrolepermission WHERE tenant_id = %s
+                )
+            """, [tenant.pk])
+
+            # 3️⃣ Delete all tables with tenant_id
+            cursor.execute("""
+                SELECT table_name
+                FROM information_schema.columns
+                WHERE column_name = 'tenant_id'
+                AND table_schema = 'public'
+            """)
+
+            tables = [row[0] for row in cursor.fetchall()]
+
+            for table in tables:
+                cursor.execute(
+                    f'DELETE FROM "{table}" WHERE tenant_id = %s',
+                    [tenant.pk]
+                )
+
+            # 4️⃣ Delete tenant 
+            cursor.execute(
+                f'DELETE FROM {tenant._meta.db_table} WHERE id = %s',
+                [tenant.pk]
+            )
+            
+            cursor.execute(
+                "UPDATE core_customuser SET is_active = FALSE WHERE tenant_id = %s",
+                [tenant.pk]
+            )
+
+class NoDeleteAdminMixin:
     def has_delete_permission(self, request, obj=None):
         return False
 
@@ -149,15 +195,16 @@ class NoDeleteAdminMixin:
         if "delete_selected" in actions:
             del actions["delete_selected"]
         return actions
-    
+
 class TenantAdmin( NoDeleteAdminMixin, admin.ModelAdmin):
+    actions = [safe_delete_tenant]
     list_display = ("name", "schema_name")
 
 
 class DomainAdmin(admin.ModelAdmin):
     list_display = ("domain", "tenant")
 
-class TenantAdminSite( admin.AdminSite):
+class TenantAdminSite( NoDeleteAdminMixin, admin.AdminSite):
     """
     Single admin site used on BOTH:
       - public domain  -> platform admin
