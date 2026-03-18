@@ -401,9 +401,7 @@ def assign_meter(request):
         assignment.branch = branch
         assignment.assigned_by = request.user
         assignment.is_active = True
-        print(".......................................1")
         if form.is_valid():
-            print(".......................................11")
             is_existing = MeterAssignment.objects.filter(meter=form.data.get("meter"), is_active=True).exists()
             if is_existing:
                 form.add_error("meter", "This meter is already actively assigned.")
@@ -418,7 +416,6 @@ def assign_meter(request):
             assignment.assigned_by = request.user
             assignment.is_active = True
             assignment.save()
-            print(".......................................111")
 
             messages.success(request, "Meter assigned successfully.")
             return redirect("meter_assignment_list")

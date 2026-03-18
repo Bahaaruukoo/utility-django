@@ -23,7 +23,10 @@ def create_meter_reading(request):
         user=request.user,
         is_active=True
     ).select_related("branch").first()
-
+    print(membership)
+    print(user)
+    print(request.branch)
+    print(tenant)
     branch = membership.branch
 
     meter_number = request.data.get("meter")
