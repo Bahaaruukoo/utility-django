@@ -59,8 +59,8 @@ class MeterAssignmentForm(forms.ModelForm):
 
     class Meta:
         model = MeterAssignment
-        fields = "__all__"
-        '''fields = [
+        #fields = "__all__"
+        fields = [
             "customer",
             "meter",
             "installation_address",
@@ -74,8 +74,8 @@ class MeterAssignmentForm(forms.ModelForm):
             "installation_date",
             "start_date",
             "is_active",
-        ]'''
-        widgets = {
+        ]
+        '''widgets = {
             "installation_date": forms.DateInput(
                 format="%d-%m-%Y",
                 attrs={"class": "form-control", "placeholder": "dd-mm-yyyy"}
@@ -92,6 +92,12 @@ class MeterAssignmentForm(forms.ModelForm):
                 format="%d-%m-%Y",
                 attrs={"class": "form-control", "placeholder": "dd-mm-yyyy"}
             ),
+        }'''
+        widgets = {
+            "installation_date": forms.DateInput(attrs={"type": "date"}),
+            "start_date": forms.DateInput(attrs={"type": "date"}),
+            "end_date": forms.DateInput(attrs={"type": "date"}),
+            "removal_date": forms.DateInput(attrs={"type": "date"}),
         }
 
     def __init__(self, *args, **kwargs):
