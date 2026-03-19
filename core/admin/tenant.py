@@ -37,6 +37,11 @@ def is_tenant_admin(request) -> bool:
         and u.is_authenticated
         and getattr(u, "is_staff", False)
         and not getattr(u, "is_platform_admin", False)
+    ) or bool(
+        u
+        and u.is_authenticated
+        and getattr(u, "is_staff", False)
+        and not getattr(u, "is_admin", False)
     )
 
 
