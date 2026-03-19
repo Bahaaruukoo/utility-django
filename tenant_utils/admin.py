@@ -38,6 +38,11 @@ def is_tenant_admin(request) -> bool:
         and getattr(u, "is_staff", False)
         and not getattr(u, "is_platform_admin", False)
         and not is_branch_admin(request)  # treat branch-admin separately
+    ) or bool(
+        u.is_authenticated
+        and getattr(u, "is_staff", False)
+        and not getattr(u, "is_platform_admin", False)
+        and getattr(u, "is_admin", False)  # treat branch-admin separately
     )
 
 
@@ -66,7 +71,6 @@ def is_branch_admin(request) -> bool:
         is_branch_admin=True,
         is_active=True,
     )
-    print(member_to_branchs)
     if member_to_branchs:
         member_to_a_branch = member_to_branchs.first()
         return branch == member_to_a_branch.branch

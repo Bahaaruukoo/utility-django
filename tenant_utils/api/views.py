@@ -25,7 +25,7 @@ def create_meter_reading(request):
     ).select_related("branch").first()
     print(membership)
     print(user)
-    print(request.branch)
+    print(membership.branch)
     print(tenant)
     branch = membership.branch
 
@@ -49,6 +49,11 @@ def create_meter_reading(request):
         )
     try:
         meter = Meter.objects.get(meter_number=meter_number, tenant=tenant)
+        if branch != meter.branch:
+            return Response(
+                {"error": "Meter not in your branch."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
     except Meter.DoesNotExist:
         return Response(
             {"error": "Meter not found."},
