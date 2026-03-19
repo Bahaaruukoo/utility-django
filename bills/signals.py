@@ -72,13 +72,13 @@ def create_default_block_rates(sender, tenant, **kwargs):
         return
 
     sample_data = [
-        # name, start,end,RES, GOV, COM, IND, PUB
-        ("Block 1", 0, 5, 40, 48, 55, 55, 48),
-        ("Block 2", 6, 10, 48, 55, 63, 63, 55),
-        ("Block 3", 11, 15, 55, 63, 71, 71, 63),
-        ("Block 4", 16, 20, 63, 71, 78, 78, 71),
-        ("Block 5", 21, 25, 71, 78, 86, 86, 78),
-        ("Block 6", 25, 9999, 78, 86, 94, 94, 86),
+        #name, start,end,RES, GOV, COM,IND,PUB
+        ("Block 1", 0, 5, 40, 48,  55, 55, 48),
+        ("Block 2", 5, 10, 48, 55, 63, 63, 55),
+        ("Block 3", 10, 15, 55, 63, 71, 71, 63),
+        ("Block 4", 15, 20, 63, 71, 78, 78, 71),
+        ("Block 5", 20, 25, 71, 78, 86, 86, 78),
+        ("Block 6", 25, 9999,78, 86, 94, 94,86),
     ]
 
     with transaction.atomic():

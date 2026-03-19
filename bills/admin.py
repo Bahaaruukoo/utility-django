@@ -122,8 +122,24 @@ class BillingSettingsAdmin(admin.ModelAdmin):
 
         if getattr(request, "is_branch_admin", False):
             return False
-
+        if getattr(request, "is_admin", False):
+            return True
+        
         if obj and obj.tenant != request.tenant:
             return False
+        
         return True
 
+def is_tenant_admin(request) -> bool:
+    u = request.user
+    return bool(
+        u.is_authenticated
+        and getattr(u, "is_staff", False)
+        and not getattr(u, "is_platform_admin", False)
+        #and not is_branch_admin(request)  # treat branch-admin separately
+    ) or bool(
+        u.is_authenticated
+        and getattr(u, "is_staff", False)
+        and not getattr(u, "is_platform_admin", False)
+        and getattr(u, "is_admin", False)  # treat branch-admin separately
+    )
