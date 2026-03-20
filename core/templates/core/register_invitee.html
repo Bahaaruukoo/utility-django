@@ -13,12 +13,17 @@
 
 {% block branding %}
 <h1 id="site-name">
-    <a href="{% url 'admin:index' %}">Grid Command Center</a>
+    <a href="{% url 'landing' %}">Grid Command Center</a>
 </h1>
 {% endblock %}
 {% block content %}
 <div class="module aligned" style="max-width: 600px;">
-
+    {% block breadcrumbs %}
+      <div class="breadcrumbs">
+        <a href="{% url 'landing' %}">{% translate 'Home' %}</a>
+        {% if title %} &rsaquo; {{ title }}{% endif %}
+      </div>
+    {% endblock %}
     <h2>Register for {{ invitation.tenant.name }}</h2>
 
     <fieldset class="module aligned form-control">

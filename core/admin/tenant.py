@@ -704,7 +704,6 @@ class SessionAdmin(admin.ModelAdmin):
         return redirect(reverse(f"{self.admin_site.name}:tenant_sessions_for_user", args=[user.id]))
 
 
-
 class APIKeyAdmin(admin.ModelAdmin):
     list_display = ("name", "key", "tenant")
     search_fields = ("name",)
