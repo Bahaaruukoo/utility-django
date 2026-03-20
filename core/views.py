@@ -384,7 +384,7 @@ def register_invitee(request, token):
                 request=request,
                 metadata={"invitation_token": str(invitation.token), "role": invitation.role.name},
             )
-"""
+            """
 
 
             # Optional: auto-login immediately

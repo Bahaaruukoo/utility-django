@@ -211,6 +211,7 @@ class CreateTenantForm(forms.Form):
 
 
 class InviteRegisterForm(forms.Form):
+    
     first_name = forms.CharField(max_length=50, required=True, label="First name")
     middle_name = forms.CharField(max_length=50, required=False, label="Middle name")
     last_name = forms.CharField(max_length=50, required=True, label="Last name")

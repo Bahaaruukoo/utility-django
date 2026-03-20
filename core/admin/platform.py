@@ -529,7 +529,6 @@ class PlatformSessionAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
-
 @admin.register(RoleTemplate, site=platform_admin_site)
 class RoleTemplateAdmin(admin.ModelAdmin):
 

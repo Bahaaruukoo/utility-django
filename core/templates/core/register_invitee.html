@@ -1,45 +1,64 @@
 {% extends "admin/base_site.html" %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">Django administration</a></h1>
+{% endblock %}
+
 {% block content %}
-  <h2>Register for {{ invitation.tenant.name }}</h2>
+<div class="module aligned" style="max-width: 600px;">
 
-  <p><b>Email:</b> {{ invitation.email }}</p>
-  <p><b>Role:</b> {{ invitation.role.name }}</p>
+    <h2>Register for {{ invitation.tenant.name }}</h2>
 
-  <form method="post" style="max-width: 420px;">
-    {% csrf_token %}
+    <fieldset class="module aligned">
+        <div class="form-row">
+            <label><strong>Email:</strong></label>
+            <div class="readonly">{{ invitation.email }}</div>
+        </div>
 
-    {{ form.non_field_errors }}
+        <div class="form-row">
+            <label><strong>Role:</strong></label>
+            <div class="readonly">{{ invitation.role.name }}</div>
+        </div>
+    </fieldset>
 
-    <div style="margin-bottom: 12px;">
-      <label>First name</label><br>
-      {{ form.first_name }}
-      {{ form.first_name.errors }}
-    </div>
+    <form method="post" class="aligned">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
 
-    <div style="margin-bottom: 12px;">
-      <label>Middle name</label><br>
-      {{ form.middle_name }}
-      {{ form.middle_name.errors }}
-    </div>
+        <div class="form-row">
+            <label for="{{ form.first_name.id_for_label }}">First name</label>
+            {{ form.first_name }}
+            {{ form.first_name.errors }}
+        </div>
 
-    <div style="margin-bottom: 12px;">
-      <label>Last name</label><br>
-      {{ form.last_name }}
-      {{ form.last_name.errors }}
-    </div>
+        <div class="form-row">
+            <label for="{{ form.middle_name.id_for_label }}">Middle name</label>
+            {{ form.middle_name }}
+            {{ form.middle_name.errors }}
+        </div>
 
-    <div style="margin-bottom: 12px;">
-      <label>Password</label><br>
-      {{ form.password1 }}
-      {{ form.password1.errors }}
-    </div>
+        <div class="form-row">
+            <label for="{{ form.last_name.id_for_label }}">Last name</label>
+            {{ form.last_name }}
+            {{ form.last_name.errors }}
+        </div>
 
-    <div style="margin-bottom: 12px;">
-      <label>Confirm password</label><br>
-      {{ form.password2 }}
-      {{ form.password2.errors }}
-    </div>
+        <div class="form-row">
+            <label for="{{ form.password1.id_for_label }}">Password</label>
+            {{ form.password1 }}
+            {{ form.password1.errors }}
+        </div>
 
-    <button type="submit" class="default">Create account</button>
-  </form>
+        <div class="form-row">
+            <label for="{{ form.password2.id_for_label }}">Confirm password</label>
+            {{ form.password2 }}
+            {{ form.password2.errors }}
+        </div>
+
+        <div class="submit-row">
+            <input type="submit" value="Create account" class="default">
+        </div>
+    </form>
+
+</div>
 {% endblock %}
