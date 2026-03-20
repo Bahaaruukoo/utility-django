@@ -42,37 +42,37 @@
         {% csrf_token %}
         {{ form.non_field_errors }}
 
-        <div class="form-row mb-1">
+        <div class="form-row mb-2">
             <label for="{{ form.first_name.id_for_label }}">First name</label>
             {{ form.first_name }}
             {{ form.first_name.errors }}
         </div>
 
-        <div class="form-row mb-1">
+        <div class="form-row mb-2">
             <label for="{{ form.middle_name.id_for_label }}">Middle name</label>
             {{ form.middle_name }}
             {{ form.middle_name.errors }}
         </div>
 
-        <div class="form-row mb-1">
+        <div class="form-row mb-2">
             <label for="{{ form.last_name.id_for_label }}">Last name</label>
             {{ form.last_name }}
             {{ form.last_name.errors }}
         </div>
 
-        <div class="form-row mb-1">
+        <div class="form-row mb-2">
             <label for="{{ form.password1.id_for_label }}">Password</label>
             {{ form.password1 }}
             {{ form.password1.errors }}
         </div>
 
-        <div class="form-row mb-1">
+        <div class="form-row mb-2">
             <label for="{{ form.password2.id_for_label }}">Confirm password</label>
             {{ form.password2 }}
             {{ form.password2.errors }}
         </div>
 
-        <div class="submit-row mb-1">
+        <div class="submit-row mb-3">
             <input type="submit" value="Create account" class="default">
         </div>
     </form>
