@@ -1,10 +1,7 @@
 import os
-import sys
 from pathlib import Path
 
-import dj_database_url
 from django.contrib.messages import constants as messages
-from django.core.management.utils import get_random_secret_key
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -12,11 +9,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ------------------------------------------------------------------------------
 # SECURITY
 # ------------------------------------------------------------------------------
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", get_random_secret_key())
-#'django-insecure-cj7i1@@2uqn_hytapgcqx=(=3gg*2xfd8b+p-w+1e2(&l*4b$r'
-DEBUG = os.getenv("DEBUG", "False") == "True"
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS",".utilityko.com").split(",") # "127.0.0.1,localhost").split(",")
-DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
+SECRET_KEY = 'django-insecure-cj7i1@@2uqn_hytapgcqx=(=3gg*2xfd8b+p-w+1e2(&l*4b$r'
+DEBUG = True
+ALLOWED_HOSTS = []
+
 
 # ------------------------------------------------------------------------------
 # APPLICATIONS
@@ -77,7 +73,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "whitenoise.middleware.WhiteNoiseMiddleware",
 
     'allauth.account.middleware.AccountMiddleware',
     "core.middleware.TenantAccessMiddleware",
@@ -119,26 +114,17 @@ MESSAGE_TAGS = {messages.ERROR: 'danger',}
 # DATABASE
 # ------------------------------------------------------------------------------
 
-if DEVELOPMENT_MODE is True:
-    import dj_database_url
-
-    DATABASES = {
-        "default": dj_database_url.config(
-            default=os.environ.get("DATABASE_URL")
-        )
+DATABASES = {
+    'default': {
+        'ENGINE': 'django_tenants.postgresql_backend',
+        'NAME': 'utility2',
+        'USER': 'postgres',
+        'PASSWORD': 'ejokoo123',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
-    DATABASES["default"]["ENGINE"] = "django_tenants.postgresql_backend"
+}
 
-elif len(sys.argv) > 0 and sys.argv[1] != 'collectstatic':
-    if os.getenv("DATABASE_URL", None) is None:
-        raise Exception("DATABASE_URL environment variable not defined")
-    DATABASES = {
-        "default": dj_database_url.config(
-            default=os.environ.get("DATABASE_URL")     
-        )
-    }
-    DATABASES["default"]["ENGINE"] = "django_tenants.postgresql_backend"
-    
 DATABASE_ROUTERS = (
     'django_tenants.routers.TenantSyncRouter',
 )
@@ -242,8 +228,6 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
 DOMAIN = 'localhost'
 PORT = ':8000'
 
@@ -253,6 +237,7 @@ PORT = ':8000'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@utilityko.com'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
@@ -260,24 +245,17 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-#EMAIL_HOST_USER = 'email.utilityko@gmail.com'
-#EMAIL_HOST_PASSWORD = 'ydgx drgm irxp umrn'
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+EMAIL_HOST_USER = 'email.utilityko@gmail.com'
+EMAIL_HOST_PASSWORD = 'ydgx drgm irxp umrn'
+
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 LOG_DIR = os.path.join(BASE_DIR, 'logs')
 LOG_FILE = os.path.join(LOG_DIR, 'system.log')
 
-
-LOG_TO_FILE = os.environ.get("LOG_TO_FILE", "0") == "0"
-
-LOG_DIR = Path(BASE_DIR) / "logs"
-if LOG_TO_FILE:
-    LOG_DIR.mkdir(exist_ok=True)
-
 LOGGING = {
+
     "version": 1,
     "disable_existing_loggers": False,
 
@@ -295,34 +273,22 @@ LOGGING = {
     },
 
     "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
+        "file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(BASE_DIR, "logs/system.log"),
+            "maxBytes": 1024 * 1024 * 10,
+            "backupCount": 5,
             "formatter": "standard",
-        },
-        **(
-            {
-                "file": {
-                    "class": "logging.handlers.RotatingFileHandler",
-                    "filename": LOG_DIR / "system.log",
-                    "maxBytes": 10 * 1024 * 1024,
-                    "backupCount": 5,
-                    "formatter": "standard",
-                    "filters": ["context"],
-                }
-            }
-            if LOG_TO_FILE
-            else {}
-        ),
+            "filters": ["context"],
+        }
     },
 
     "loggers": {
         "app": {
-            "handlers": ["file"] if LOG_TO_FILE else ["console"],
+            "handlers": ["file"],
             "level": "INFO",
             "propagate": False,
         }
-    },
+    }
 }
-
-
 
