@@ -1,9 +1,21 @@
 {% extends "admin/base_site.html" %}
+<style>
+    .module.aligned {
+        padding: 20px 30px;
+        background: #fff;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+    }
+    .form-row {
+        margin-bottom: 12px;
+    }
+</style>
 
 {% block branding %}
-<h1 id="site-name"><a href="{% url 'admin:index' %}">Register Here</a></h1>
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">Grid Command Center</a>
+</h1>
 {% endblock %}
-
 {% block content %}
 <div class="module aligned" style="max-width: 600px;">
 
