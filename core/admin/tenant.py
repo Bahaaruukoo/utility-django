@@ -376,11 +376,21 @@ class TenantRolePermissionTenantAdmin(admin.ModelAdmin):
         return form
 
     def save_model(self, request, obj, form, change):
+        tenant = request.tenant
 
-        obj.tenant = request.tenant
+        existing = TenantRolePermission.objects.filter(
+            tenant=tenant,
+            role=obj.role
+        ).first()
+
+        if existing and not change:
+            # Reuse existing object instead of creating new
+            obj.pk = existing.pk
+
+        obj.tenant = tenant
 
         super().save_model(request, obj, form, change)
-
+        
     def save_related(self, request, form, formsets, change):
 
         super().save_related(request, form, formsets, change)
