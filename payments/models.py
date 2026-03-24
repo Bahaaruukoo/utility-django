@@ -165,9 +165,9 @@ class Payment(BranchAwareModel):
             models.Index(fields=["status"]),
             models.Index(fields=["payment_method"]),
             models.Index(fields=["received_by"]),
+            models.Index(fields=["is_reversal"]),
             models.Index(fields=["bill", "status"]),
         ]
-   
         constraints = [
             models.UniqueConstraint(
                 fields=["bill"],
@@ -236,6 +236,12 @@ class PaymentAllocation(BranchAwareModel):
 
     def __str__(self):
         return f"{self.component} - {self.amount}"
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["component"]),
+            models.Index(fields=["payment"]),
+        ]
 
 class Receipt(BranchAwareModel):
     payment = models.OneToOneField(

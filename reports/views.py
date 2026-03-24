@@ -1,12 +1,16 @@
 import json
-from datetime import date
+from datetime import date, datetime, time
 
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Count, F, Max, Min, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from payments.models import CashierSession
+from bills.models import Bill
+from customers.models import Customer
+from payments.models import CashierSession, PaymentAllocation
 from reports.forms import (BillingReportForm, CollectionReportForm,
                            SessionReportForm)
 from reports.models import (BillReport, CashierSessionReport, CollectionReport,
@@ -25,7 +29,6 @@ from tenant_utils.models import Branch
 
 @login_required
 def statistics_view(request):
-
     tenant = request.user.tenant
     today = timezone.now()
 
@@ -33,10 +36,9 @@ def statistics_view(request):
     month_param = request.GET.get("month")
 
     year = int(year_param) if year_param else today.year
+    month = int(month_param) if month_param else today.month
 
-    if month_param:
-
-        month = int(month_param)
+    if month != 0:
 
         report = generate_monthly_statistics(
             tenant=tenant,
@@ -47,7 +49,6 @@ def statistics_view(request):
         report_type = "monthly"
 
     else:
-
         report = generate_yearly_statistics(
             tenant=tenant,
             year=year
@@ -61,7 +62,7 @@ def statistics_view(request):
         {
             "report": report,
             "year": year,
-            "month": month_param,
+            "month": str(month),
             "report_type": report_type,
         }
     )
@@ -166,7 +167,8 @@ def collection_report_generate(request):
                 year=year,
                 month=month,
                 branch=branch,
-                user=request.user, force=True
+                user=request.user, 
+                force=True
             )
 
             return redirect(
@@ -212,6 +214,9 @@ def debt_aging_report(request):
     else:
         as_of_date = date.today()
 
+    as_of_date = timezone.make_aware(
+        datetime.combine(as_of_date, time.max)
+    )
     branch_id = request.GET.get("branch")
 
     branch = None
@@ -294,4 +299,252 @@ def session_financial_report(request):
             "totals": totals
         }
     )
+
+
+def kebele_category_report(request):
+    month = request.GET.get("month")
+    year = request.GET.get("year")
+    page = request.GET.get("page", 1)
+
+    if not year:
+        year = timezone.now().year
+
+    # ✅ Default month (IMPORTANT)
+    if not month:
+        month = timezone.now().month
+    else:
+        month = int(month)
+    # ---------------------------------------
+    # PAYMENT ALLOCATIONS (FINANCIAL DATA)
+    # ---------------------------------------
+    allocations = PaymentAllocation.objects.filter(
+        tenant=request.tenant,
+        payment__bill__status="SOLD",
+        payment__bill__bill_period__year=year,
+        payment__status="COMPLETED",     # ✅ only successful payments
+        payment__is_reversal=False,      # ✅ exclude reversals
+        payment__reversal_entries__isnull=True 
+    )
+
+    if month and month != "0":
+        allocations = allocations.filter(
+            #payment__payment_date__month=month
+            payment__bill__bill_period__month=month
+        )
+    component_data = allocations.values(
+        "payment__bill__customer__kebele__name",
+        "payment__bill__customer__customer_type",
+        "component"
+    ).annotate(
+        total=Sum("amount")
+    )
+
+    # ---------------------------------------
+    # BILL METRICS
+    # ---------------------------------------
+    bills = Bill.objects.select_related(
+        "customer__kebele", "reading"
+    ).filter(
+        tenant=request.tenant,
+        status="SOLD",
+        bill_period__year=year
+    )
+    if month and month != 0:
+        bills = bills.filter(bill_period__month=month)
+
+    bill_stats = bills.values(
+        "customer__kebele__name",
+        "customer__customer_type"
+    ).annotate(
+        billCount=Count("id"),
+        minBillAmount=Min("amount"),
+        maxBillAmount=Max("amount"),
+    )
+
+    # ---------------------------------------
+    # INITIALIZE STRUCTURE (VERY IMPORTANT)
+    # ---------------------------------------
+    grouped = {}
+
+    for stat in bill_stats:
+        kebele = stat["customer__kebele__name"] or "Unknown"
+        category = stat["customer__customer_type"]
+
+        if kebele not in grouped:
+            grouped[kebele] = {
+                "kebele": kebele,
+                "categoryReports": {},
+                "billCountKebeleTotal": 0,
+                "consumptionKebeleTotal": 0,
+                "rentKebeleTotal": 0,
+                "consCostKebeleTotal": 0,
+                "serviceKebeleTotal": 0,
+                "operationKebeleTotal": 0,
+                "penaltyKebeleTotal": 0,
+                "kebeleTotal": 0,
+            }
+
+        grouped[kebele]["categoryReports"][category] = {
+            "customerCategory": category,
+            "billCount": stat["billCount"],
+            "minBillAmount": stat["minBillAmount"],
+            "maxBillAmount": stat["maxBillAmount"],
+            "totalConsumption": 0,  # ✅ initialize here
+            "totalMeterRent": 0,
+            "totalAmount": 0,
+            "totalServiceCharge": 0,
+            "totalOperationCharge": 0,
+            "totalPenalty": 0,
+            "categoryTotal": 0,
+        }
+
+        grouped[kebele]["billCountKebeleTotal"] += stat["billCount"]
+
+    # ---------------------------------------
+    # ADD CONSUMPTION (SAFE METHOD)
+    # ---------------------------------------
+    for bill in bills:
+        kebele = bill.customer.kebele.name if bill.customer.kebele else "Unknown"
+        category = bill.customer.customer_type
+
+        if kebele not in grouped or category not in grouped[kebele]["categoryReports"]:
+            continue
+
+        consumption = bill.reading.consumption if bill.reading else 0
+
+        grouped[kebele]["categoryReports"][category]["totalConsumption"] += consumption
+        grouped[kebele]["consumptionKebeleTotal"] += consumption
+
+    # ---------------------------------------
+    # APPLY COMPONENT TOTALS
+    # ---------------------------------------
+    for row in component_data:
+        kebele = row["payment__bill__customer__kebele__name"] or "Unknown"
+        category = row["payment__bill__customer__customer_type"]
+        component = row["component"]
+        total = row["total"] or 0
+
+        if kebele not in grouped or category not in grouped[kebele]["categoryReports"]:
+            continue
+
+        cat = grouped[kebele]["categoryReports"][category]
+
+        if component == "WATER":
+            cat["totalAmount"] += total
+            grouped[kebele]["consCostKebeleTotal"] += total
+
+        elif component == "METER_RENT":
+            cat["totalMeterRent"] += total
+            grouped[kebele]["rentKebeleTotal"] += total
+
+        elif component == "SERVICE_FEE":
+            cat["totalServiceCharge"] += total
+            grouped[kebele]["serviceKebeleTotal"] += total
+
+        elif component == "OPERATION_FEE":
+            cat["totalOperationCharge"] += total
+            grouped[kebele]["operationKebeleTotal"] += total
+
+        elif component == "PENALTY":
+            cat["totalPenalty"] += total
+            grouped[kebele]["penaltyKebeleTotal"] += total
+
+    # ---------------------------------------
+    # FINAL TOTALS
+    # ---------------------------------------
+    for kebele, data in grouped.items():
+        for cat in data["categoryReports"].values():
+            cat_total = (
+                cat["totalAmount"]
+                + cat["totalMeterRent"]
+                + cat["totalServiceCharge"]
+                + cat["totalOperationCharge"]
+                + cat["totalPenalty"]
+            )
+            cat["categoryTotal"] = cat_total
+            data["kebeleTotal"] += cat_total
+
+        data["categoryReports"] = list(data["categoryReports"].values())
+
+    grand_totals = {
+        "billCount": 0,
+        "totalConsumption": 0,
+        "totalAmount": 0,
+        "totalMeterRent": 0,
+        "totalServiceCharge": 0,
+        "totalOperationCharge": 0,
+        "totalPenalty": 0,
+        "grandTotal": 0,
+    }
+
+    # ---------------------------------------
+    # GRAND TOTAL PER CATEGORY
+    # ---------------------------------------
+    category_totals = {}
+
+    for kebele, data in grouped.items():
+        for cat in data["categoryReports"]:
+            category = cat["customerCategory"]
+
+            if category not in category_totals:
+                category_totals[category] = {
+                    "customerCategory": category,
+                    "billCount": 0,
+                    "totalConsumption": 0,
+                    "totalAmount": 0,
+                    "totalMeterRent": 0,
+                    "totalServiceCharge": 0,
+                    "totalOperationCharge": 0,
+                    "totalPenalty": 0,
+                    "categoryTotal": 0,
+                }
+
+            agg = category_totals[category]
+
+            agg["billCount"] += cat["billCount"]
+            agg["totalConsumption"] += cat["totalConsumption"]
+            agg["totalAmount"] += cat["totalAmount"]
+            agg["totalMeterRent"] += cat["totalMeterRent"]
+            agg["totalServiceCharge"] += cat["totalServiceCharge"]
+            agg["totalOperationCharge"] += cat["totalOperationCharge"]
+            agg["totalPenalty"] += cat["totalPenalty"]
+            agg["categoryTotal"] += cat["categoryTotal"]
+
+    # convert to list for template
+    category_totals_list = list(category_totals.values())
+
+    # ---------------------------------------
+    # GRAND TOTAL (EXCLUDES MIN/MAX)
+    # ---------------------------------------
+    for kebele, data in grouped.items():
+        grand_totals["billCount"] += data["billCountKebeleTotal"]
+        grand_totals["totalConsumption"] += data["consumptionKebeleTotal"]
+        grand_totals["totalAmount"] += data["consCostKebeleTotal"]
+        grand_totals["totalMeterRent"] += data["rentKebeleTotal"]
+        grand_totals["totalServiceCharge"] += data["serviceKebeleTotal"]
+        grand_totals["totalOperationCharge"] += data["operationKebeleTotal"]
+        grand_totals["totalPenalty"] += data["penaltyKebeleTotal"]
+        grand_totals["grandTotal"] += data["kebeleTotal"]
+
+    # ---------------------------------------
+    # PAGINATION
+    # ---------------------------------------
+    reports = list(grouped.values())
+    paginator = Paginator(reports, 5)
+    page_obj = paginator.get_page(page)
+
+    months = range(1, 13)
+    year = timezone.now().year
+    years = range(year - 5, year + 1)
+
+    return render(request, "reports/kebele_category_report.html", {
+        "page_obj": page_obj,
+        "reportsGroupedByKebele": page_obj.object_list,
+        "selectedMonth": int(month) if month else 0,
+        "selectedYear": int(year),
+        "months": months,
+        "years": years,
+        "grandTotals": grand_totals,
+        "categoryTotals": category_totals_list,
+    })
 

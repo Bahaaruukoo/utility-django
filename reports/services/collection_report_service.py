@@ -52,10 +52,8 @@ def generate_monthly_collection_report(
         payment_date__gte=start,
         payment_date__lt=next_month
     )
-    print(payments)
     if branch:
         payments = payments.filter(branch=branch)
-
 
     # Monthly aggregation (for dashboard charts only)
     monthly_payments = Payment.objects.filter(

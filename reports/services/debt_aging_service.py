@@ -58,7 +58,9 @@ def generate_debt_aging_report(tenant, as_of_date, branch=None):
 
     for bill in bills:
 
-        age_days = (as_of_date - bill.issue_date).days
+        #age_days = (as_of_date - bill.issue_date).days
+        age_days = (as_of_date.date() - bill.issue_date).days
+
         outstanding = bill.outstanding
 
         if age_days <= 30:

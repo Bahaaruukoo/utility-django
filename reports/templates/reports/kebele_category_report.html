@@ -1,0 +1,205 @@
+{% extends "portal/base.html" %}
+{% block content %}
+
+<div class="container mt-1">
+    {% include 'reports/report_dashboard_header.html' %}
+
+    <!-- FILTER FORM -->
+    <form method="get" class="form-inline mb-4 p-1 border rounded bg-light ">
+        <div class="row">
+            <div class="col-4">
+                <h5 class="">Bill Period Payments by Kebele</h5>
+            </div>
+            <!-- MONTH -->
+            <div class="d-flex col-2">
+                <label class="mr-2 mt-1 me-1">Month:</label>
+                <select name="month" class="form-control form-control-sm mr-3">
+                    <option value="0" {% if selectedMonth == 0 %} selected {% endif %}>Full Year</option>
+                    {% for m in months %}
+                        <option value="{{ m }}" {% if m == selectedMonth %}selected{% endif %}>
+                            {{ m }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <!-- YEAR -->
+            <div class="d-flex col-2">
+                <label class="mr-2 mt-1 me-1">Year:</label>
+                <select name="year" class="form-control form-control-sm mr-1">
+                    {% for y in years %}
+                        <option value="{{ y }}" {% if y == selectedYear %}selected{% endif %}>
+                            {{ y }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-2">            
+                <button type="submit" class="btn btn-primary btn-sm px-3 mt-1">Filter</button>
+            </div>
+    </div>
+    </form>
+
+
+    <!-- REPORT -->
+    {% if reportsGroupedByKebele %}
+        {% for kebeleReport in reportsGroupedByKebele %}
+
+            <div class="mb-2">
+                <h5 class="bg-secondary text-white p-1">
+                    Kebele: {{ kebeleReport.kebele }}
+                </h5>
+
+                <table class="table table-bordered table-striped table-sm">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Category</th>
+                            <th>Bill Count</th>
+                            <th>Min Bill</th>
+                            <th>Max Bill</th>
+                            <th>Consumption</th>
+                            <th>Tariff</th>
+                            <th>Meter Rent</th>
+                            <th>Service Fee</th>
+                            <th>Operation Fee</th>
+                            <th>Penalty</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for c in kebeleReport.categoryReports %}
+                        <tr>
+                            <td>{{ c.customerCategory }}</td>
+                            <td>{{ c.billCount }}</td>
+                            <td>{{ c.minBillAmount|floatformat:2 }}</td>
+                            <td>{{ c.maxBillAmount|floatformat:2 }}</td>
+                            <td>{{ c.totalConsumption|floatformat:2 }}</td>
+                            <td>{{ c.totalAmount|floatformat:2 }}</td>
+                            <td>{{ c.totalMeterRent|floatformat:2 }}</td>
+                            <td>{{ c.totalServiceCharge|floatformat:2 }}</td>
+                            <td>{{ c.totalOperationCharge|floatformat:2 }}</td>
+                            <td>{{ c.totalPenalty|floatformat:2 }}</td>
+                            <td><strong>{{ c.categoryTotal|floatformat:2 }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                    <tfoot class="bg-light font-weight-bold">
+                        <tr>
+                            <td>Total</td>
+                            <td>{{ kebeleReport.billCountKebeleTotal }}</td>
+                            <td colspan="2"></td>
+                            <td>{{ kebeleReport.consumptionKebeleTotal|floatformat:2 }}</td>
+                            <td>{{ kebeleReport.consCostKebeleTotal|floatformat:2 }}</td>
+                            <td>{{ kebeleReport.rentKebeleTotal|floatformat:2 }}</td>
+                            <td>{{ kebeleReport.serviceKebeleTotal|floatformat:2 }}</td>
+                            <td>{{ kebeleReport.operationKebeleTotal|floatformat:2 }}</td>
+                            <td>{{ kebeleReport.penaltyKebeleTotal|floatformat:2 }}</td>
+                            <td>{{ kebeleReport.kebeleTotal|floatformat:2 }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-warning">
+            No data found for selected period.
+        </div>
+    {% endif %}
+
+    <div class="mt-2">
+    <h5 class="bg-primary text-white p-1">Grand Total per Category</h5>
+
+    <table class="table table-bordered table-striped table-sm">
+        <thead class="thead-dark">
+            <tr>
+                <th>Category</th>
+                <th>Bill Count</th>
+                <th>Min Bill</th>
+                <th>Max Bill</th>
+                <th>Consumption</th>
+                <th>Water Cost</th>
+                <th>Meter Rent</th>
+                <th>Service Fee</th>
+                <th>Operation Fee</th>
+                <th>Penalty</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in categoryTotals %}
+            <tr>
+                <td>{{ c.customerCategory }}</td>
+                <td>{{ c.billCount }}</td>
+                <td colspan="2"></td>
+                <td>{{ c.totalConsumption|floatformat:2 }}</td>
+                <td>{{ c.totalAmount|floatformat:2 }}</td>
+                <td>{{ c.totalMeterRent|floatformat:2 }}</td>
+                <td>{{ c.totalServiceCharge|floatformat:2 }}</td>
+                <td>{{ c.totalOperationCharge|floatformat:2 }}</td>
+                <td>{{ c.totalPenalty|floatformat:2 }}</td>
+                <td><strong>{{ c.categoryTotal|floatformat:2 }}</strong></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+      
+<!-- Grand Totoal REPORT -->
+    {% if grandTotals %}
+            <div class="mb-2">
+                <h5 class="bg-secondary text-white p-1">
+                    Grand Total
+                </h5>
+
+                <table class="table table-bordered table-striped table-sm">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Category</th>
+                            <th>Bill Count</th>
+                            <th>Min Bill</th>
+                            <th>Max Bill</th>
+                            <th>Consumption</th>
+                            <th>Tariff</th>
+                            <th>Meter Rent</th>
+                            <th>Service Fee</th>
+                            <th>Operation Fee</th>
+                            <th>Penalty</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <td>{{ grandTotals.customerCategory }}</td>
+                            <td>{{ grandTotals.billCount }}</td>
+                            <td colspan="2"></td>
+                            <td>{{ grandTotals.totalConsumption|floatformat:2 }}</td>
+                            <td>{{ grandTotals.totalAmount|floatformat:2 }}</td>
+                            <td>{{ grandTotals.totalMeterRent|floatformat:2 }}</td>
+                            <td>{{ grandTotals.totalServiceCharge|floatformat:2 }}</td>
+                            <td>{{ grandTotals.totalOperationCharge|floatformat:2 }}</td>
+                            <td>{{ grandTotals.totalPenalty|floatformat:2 }}</td>
+                            <td><strong>{{ grandTotals.grandTotal|floatformat:2 }}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        
+    {% else %}
+        <div class="alert alert-warning">
+            No data found for selected filters.
+        </div>
+    {% endif %}
+
+    <!-- EXPORT BUTTON -->
+    <form method="get" action="#">
+        <input type="hidden" name="month" value="{{ selectedMonth }}">
+        <input type="hidden" name="year" value="{{ selectedYear }}">
+        <button class="btn btn-danger">Export as PDF</button>
+    </form>
+
+</div>
+
+{% endblock %}
+{% include  "portal/includes/pagination.html" %}

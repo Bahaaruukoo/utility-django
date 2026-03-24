@@ -1,6 +1,7 @@
-from datetime import date
+from datetime import date, datetime
 
 from django.db.models import Sum
+from django.utils import timezone
 
 from bills.models import MeterReading
 from customers.models import Customer, Meter, MeterAssignment
@@ -46,12 +47,19 @@ def generate_yearly_statistics(tenant, year):
     return report
 def generate_monthly_statistics(tenant, year, month):
 
-    start = date(year, month, 1)
+    start = timezone.make_aware(datetime(year, month, 1))
+    
+    #start = date(year, month, 1)
 
-    if month == 12:
+    '''if month == 12:
         end = date(year + 1, 1, 1)
     else:
         end = date(year, month + 1, 1)
+    '''
+    if month == 12:
+        end = timezone.make_aware(datetime(year + 1, 1, 1))
+    else:
+        end = timezone.make_aware(datetime(year, month + 1, 1))
 
     customers = Customer.objects.filter(
         tenant=tenant,
