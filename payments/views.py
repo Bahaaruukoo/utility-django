@@ -350,13 +350,11 @@ def approve_close_view(request, session_id):
 
     try:
         session_ = approve_session_close(session, supervisor)
-
         log_session_closed(session_, supervisor, request)
 
         logger.info(
             f"Session closed session_id={session_.id} supervisor={supervisor} tenant={tenant} branch={branch}"
         )
-
         messages.success(request, "Session approved.")
 
     except Exception as e:
