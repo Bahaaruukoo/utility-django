@@ -30,8 +30,10 @@ urlpatterns = [
     path("api/", include("tenant_utils.api.urls")),
     # Invitations / registration
     path("portal/", include("portal.urls")),
+    path("ops/", include("customers.urls")),
     path("payments/", include("payments.urls")),
     path("reports/", include("reports.urls")),
+    path("bills/", include("bills.urls")),
     path("", include("core.urls")),
 
 ]

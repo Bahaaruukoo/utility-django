@@ -23,10 +23,19 @@ User = get_user_model()
 
 @login_required
 @permission("customers.view_customer")
-def customer_list(request):
-    customers = Customer.objects.all()
+def customer_search(request):
+    search = request.GET.get("q")
 
-    # Tenant already isolated by schema
+    # No search yet → show empty list
+    if not search:
+        return render(request, "customers/customer_search.html", {
+            "customers": [],
+            "search": "",
+            "searched": False
+        })
+
+    # Search performed → filter results
+    customers = Customer.objects.all()
 
     # Branch restriction
     if getattr(request, "branch", None):
@@ -35,20 +44,17 @@ def customer_list(request):
             meter_assignments__is_active=True
         ).distinct()
 
-    search = request.GET.get("q")
-    if search:
-        customers = customers.filter(
-            Q(first_name__icontains=search) |
-            Q(last_name__icontains=search) |
-            Q(phone__icontains=search)
-        )
+    customers = customers.filter(
+        Q(first_name__icontains=search) |
+        Q(last_name__icontains=search) |
+        Q(phone__icontains=search)
+    )
 
-    context = {
+    return render(request, "customers/customer_search.html", {
         "customers": customers,
-        "search": search
-    }
-    return render(request, "customers/customer_list.html", context)
-
+        "search": search,
+        "searched": True
+    })
 
 @login_required
 @permission("customers.add_customer")
@@ -67,7 +73,6 @@ def customer_create(request):
 
     return render(request, "customers/customer_form.html", {"form": form})
 
-
 @login_required
 @permission("customers.view_customer")
 def customer_detail(request, customer_no):
@@ -79,12 +84,11 @@ def customer_detail(request, customer_no):
         tenant=request.tenant
     )
 
-    
     # 📊 Active Assignment
-    active_assignment = customer.meter_assignments.filter(
+    '''active_assignment = customer.meter_assignments.filter(
         is_active=True
-    ).select_related("meter", "branch").first()
-
+    ).select_related("meter", "branch")#.first()
+    '''
     # 📜 Assignment History
     assignment_history = customer.meter_assignments.select_related(
         "meter", "branch"
@@ -92,12 +96,11 @@ def customer_detail(request, customer_no):
 
     context = {
         "customer": customer,
-        "active_assignment": active_assignment,
+        #"active_assignment": active_assignment,
         "assignment_history": assignment_history,
     }
 
     return render(request, "customers/customer_detail.html", context)
-
 
 @login_required
 @permission("customers.change_customer")
@@ -168,11 +171,11 @@ def customer_update(request, customer_no):
 @login_required
 def customer_list_(request):
 
-    customers = Customer.objects.filter(tenant=request.tenant)
-
-    search = request.GET.get("q")
-    if search:
-        customers = customers.filter(first_name__icontains=search)
+    customers = (
+        Customer.objects
+        .filter(tenant=request.tenant)
+        .order_by("-created_at")  # stable ordering for pagination
+    )
 
     paginator = Paginator(customers, 10)  # 10 per page
     page_number = request.GET.get("page")
@@ -180,8 +183,7 @@ def customer_list_(request):
 
     return render(request, "customers/customer_list.html", {
         "page_obj": page_obj,
-        "customers": page_obj,   # so existing template works
-        "search": search
+        "customers": page_obj,   # keeps template compatibility
     })
 
 @login_required
@@ -236,7 +238,7 @@ def meter_create(request):
 @login_required
 @permission("customers.view_meter")
 def meter_list(request):
-
+    
     tenant = getattr(request, "tenant", None)
     branch = getattr(request, "branch", None)
 

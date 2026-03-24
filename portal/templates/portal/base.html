@@ -114,7 +114,7 @@
                 </a>
 
                 <div class="collapse show" id="managementMenu">
-                    <a href="{% url 'customer_list' %}" class="menu-link">
+                    <a href="{% url 'customer_search' %}" class="menu-link">
                         <i class="bi bi-people ms-2"></i>
                         <span>Customers</span>
                     </a>
@@ -124,10 +124,6 @@
                         <span>Meters</span>
                     </a>
 
-                    <a href="{% url 'edit_billing_settings' %}" class="menu-link">
-                        <i class="bi bi-gear ms-2"></i>
-                        <span>Settings</span>
-                    </a>
                 </div>
             </div>
 
@@ -179,9 +175,10 @@
                  <div class="collapse show" id="reportsMenu">
                     <a href="{% url 'payment_list' %}" class="menu-link">
                         <i class="bi bi-receipt ms-2"></i>
-                        <span>Payment List</span>
+                        <span>All Payments</span>
                     </a>
                 </div>
+                
                 <div class="collapse show" id="reportsMenu">
                     <a href="#" class="menu-link">
                         <i class="bi bi-graph-up ms-2"></i>

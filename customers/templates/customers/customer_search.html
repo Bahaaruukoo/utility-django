@@ -1,0 +1,100 @@
+{% extends "portal/base.html" %}
+
+{% block content %}
+<div class="container ">
+    {% include 'customers/customer_dashboard_header.html' %}
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold">Customer Search</h4>
+        
+    </div>
+
+    <!-- Search Box -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="mb-0">
+                <div class="input-group input-group-lg">
+                    <input type="text" name="q"
+                           value="{{ search|default:'' }}"
+                           class="form-control"
+                           placeholder="Search by name or phone…">
+                    <button class="btn btn-primary px-4">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if not searched %}
+        <!-- Empty State (before searching) -->
+        <div class="text-center text-muted mt-5">
+            <h5 class="fw-light">Search for a customer</h5>
+            <p class="small">Enter a name or phone number above</p>
+        </div>
+    {% endif %}
+
+    {% if searched %}
+        <!-- Results Header -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="text-muted mb-0">
+                Showing results for: <strong>{{ search }}</strong>
+            </h5>
+        </div>
+
+        <!-- Results Table -->
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Customer No</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Registered</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in customers %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'customer_detail' c.customer_no %}?next={{ request.get_full_path|urlencode }}"
+                                   class="fw-semibold text-decoration-none">
+                                    {{ c.customer_no }}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{% url 'customer_detail' c.customer_no %}?next={{ request.get_full_path|urlencode }}"
+                                   class="text-dark text-decoration-none">
+                                    {{ c.first_name }} {{ c.middle_name }} {{ c.last_name }}
+                                </a>
+                            </td>
+                            <td>{{ c.phone }}</td>
+                            <td>{{ c.get_customer_type_display }}</td>
+                            <td>
+                                {% if c.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ c.created_at|date:"Y-m-d" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                No customers found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {% include "portal/includes/pagination.html" %}
+    {% endif %}
+
+</div>
+{% endblock %}

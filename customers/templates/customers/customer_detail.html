@@ -2,6 +2,7 @@
 
 {% block content %}
 <div class="container">
+    {% include 'customers/customer_dashboard_header.html' %}
 
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-dark text-white">
@@ -22,7 +23,11 @@
                 </div>
 
                 <div class="col-md-6">
-                    <p><strong>ID Number:</strong> {{ customer.id_number }}</p>
+                    <p><strong>Bill Number:</strong> 
+                        {% for assignment in active_assignment %} 
+                            {{ assignment.meter.bill_number }},
+                        {% endfor %}
+                    </p>
                     <p><strong>Status:</strong>
                         {% if customer.is_active %}
                             <span class="badge bg-success">Active</span>
@@ -55,26 +60,6 @@
         </div>
     </div>
 
-    <!-- Active Meter -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-primary text-white">
-            Active Meter
-        </div>
-        <div class="card-body">
-
-            {% if active_assignment %}
-                <p><strong>Meter Number:</strong> {{ active_assignment.meter.meter_number }}</p>
-                <p><strong>Meter Type:</strong> {{ active_assignment.meter.meter_type }}</p>
-                <p><strong>Branch:</strong> {{ active_assignment.branch }}</p>
-                <p><strong>Installation Date:</strong> {{ active_assignment.installation_date }}</p>
-                <p><strong>Installation Address:</strong> {{ active_assignment.installation_address }}</p>
-            {% else %}
-                <p class="text-muted">No active meter assigned.</p>
-            {% endif %}
-
-        </div>
-    </div>
-
     <!-- Assignment History -->
     <div class="card shadow-sm">
         <div class="card-header bg-secondary text-white">
@@ -87,6 +72,7 @@
                     <tr>
                         <th>Meter</th>
                         <th>Branch</th>
+                        <th>Bill Number</th>
                         <th>Start</th>
                         <th>End</th>
                         <th>Status</th>
@@ -96,7 +82,8 @@
                     {% for a in assignment_history %}
                         <tr>
                             <td>{{ a.meter.meter_number }}</td>
-                            <td>{{ a.branch }}</td>
+                            <td>{{ a.branch.name }}</td>
+                            <td>{{ a.meter.bill_number }}</td>
                             <td>{{ a.start_date }}</td>
                             <td>{{ a.end_date|default:"-" }}</td>
                             <td>

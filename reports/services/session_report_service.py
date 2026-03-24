@@ -8,16 +8,16 @@ def generate_session_report(session, user):
 
     payments = Payment.objects.filter(session=session)
 
-    total_cash = payments.filter(method="CASH").aggregate(
-        s=Sum("amount")
+    total_cash = payments.filter(payment_method="CASH").aggregate(
+        s=Sum("amount_paid")
     )["s"] or 0
 
-    total_bank = payments.filter(method="BANK").aggregate(
-        s=Sum("amount")
+    total_bank = payments.filter(payment_method="BANK").aggregate(
+        s=Sum("amount_paid")
     )["s"] or 0
 
-    total_mobile = payments.filter(method="MOBILE").aggregate(
-        s=Sum("amount")
+    total_mobile = payments.filter(payment_method="MOBILE").aggregate(
+        s=Sum("amount_paid")
     )["s"] or 0
 
     system_total = total_cash + total_bank + total_mobile

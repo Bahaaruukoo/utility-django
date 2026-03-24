@@ -34,8 +34,7 @@ class Customer(TenantAwareModel):
         ('IND', 'Industry'),
     )
 
-    customer_no = models.UUIDField(
-        default=uuid.uuid4,
+    customer_no = models.CharField(
         editable=False,
         unique=True
     )
@@ -82,18 +81,18 @@ class Customer(TenantAwareModel):
         ]
 
     def save(self, *args, **kwargs):
-        if not self.customer_no:
-            with transaction.atomic():
-                last = (
-                    Customer.objects
-                    .select_for_update()
-                    .filter(tenant=self.tenant)
-                    .order_by("-id")
-                    .first()
-                )
-                next_number = 1 if not last else last.id + 1
-                self.customer_no = f"{self.tenant.schema_name.upper()}-{next_number:06d}"
-
+        #if not self.customer_no:
+        with transaction.atomic():
+            last = (
+                Customer.objects
+                .select_for_update()
+                .filter(tenant=self.tenant)
+                .order_by("-id")
+                .first()
+            )
+            next_number = 1 if not last else last.id + 1
+            self.customer_no = f"{next_number:06d}"
+        print(".....................", next_number)
         super().save(*args, **kwargs)
 
     def full_name(self):
