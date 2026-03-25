@@ -2,8 +2,9 @@ from django.urls import include, path
 
 from bills.views import (MeterReadingCreateView, MeterReadingListView,
                          bill_detail, bill_detail_print, bill_list,
-                         edit_billing_settings, mark_bill_sold,
-                         meter_reading_detail, meter_reading_edit, void_bill)
+                         edit_billing_settings, manual_bill_generation,
+                         mark_bill_sold, meter_reading_detail,
+                         meter_reading_edit, void_bill)
 
 urlpatterns = [
     path("create/", MeterReadingCreateView.as_view(), name="meter_reading_create"),
@@ -16,6 +17,7 @@ urlpatterns = [
     path("bills/<int:pk>/print/", bill_detail_print, name="bill-detail-print"),
     path("bills/<int:pk>/sell/", mark_bill_sold, name="bill-sell"),
     path("bills/<int:pk>/void/", void_bill, name="bill_void"),
+    path("bills/generate/<int:pk>/", manual_bill_generation, name="generate_bill"),
 
     #path("unpaid/", views.unpaid_bills_view, name="unpaid_bills"),
 ] 

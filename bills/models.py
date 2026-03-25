@@ -65,7 +65,7 @@ class MeterReading(TenantAwareModel):
         self.consumption = self.reading_value - self.previous_reading
 
     def __str__(self):
-        return f"{self.meter.meter_no} - {self.reading_value} on {self.reading_date}"
+        return f"{self.meter.meter_number} - {self.reading_value} on {self.reading_date}"
 
 class Bill(TenantAwareModel):
     status_choices = [
@@ -167,7 +167,7 @@ class Bill(TenantAwareModel):
         self.reading.save(update_fields=["reading_status"])
 
     def __str__(self):
-        return f"Bill {self.bill_number} - {self.meter.meter_no} - {self.issue_date}"
+        return f"Bill {self.bill_number} - {self.meter.meter_number} - {self.issue_date}"
 
 
 class BillItem(TenantAwareModel):

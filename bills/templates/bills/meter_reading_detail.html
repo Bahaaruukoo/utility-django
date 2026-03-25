@@ -78,12 +78,18 @@
                         <div>
                             {% if reading.reading_status == "FRESH" %}
                                 <span class="badge bg-info">Fresh</span>
+                                <div class="mt-2"><a href="{% url 'generate_bill' reading.id %}">Generate Bill</a> </div>
                             {% elif reading.reading_status == "GENERATED" %}
                                 <span class="badge bg-success">Generated</span>
                             {% elif reading.reading_status == "FAILED" %}
                                 <span class="badge bg-danger">Failed</span>
+                                <div class="mt-2"> <a href="{% url 'generate_bill' reading.id %}">Generate Bill</a> </div>
                             {% elif reading.reading_status == "VOIDED" %}
-                                <span class="badge bg-secondary">Voided</span>
+                                <span class="badge bg-danger">Voided</span>
+                                <div class="mt-2"><a href="{% url 'generate_bill' reading.id %}">Generate Bill</a> </div>
+                            {% elif reading.reading_status == "BILVOIDED" %}
+                                <span class="badge bg-danger">Bill-Voided</span>
+                                <div class="mt-2"><a href="{% url 'generate_bill' reading.id %}">Generate Bill</a> </div>
                             {% else %}
                                 <span class="badge bg-dark">
                                     {{ reading.reading_status }}

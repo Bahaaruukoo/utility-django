@@ -463,8 +463,8 @@ class MeterReadingService:
 
         # Get related bill
         bill = Bill.objects.filter(
-            tenant=reading.tenant,
-            meter=reading.meter,
+            #tenant=reading.tenant,            meter=reading.meter,'''
+            reading=reading,
             bill_period=reading.reading_date
         ).first()
 
@@ -494,19 +494,22 @@ class MeterReadingService:
         if new_value < previous:
             raise ValidationError("Reading cannot be less than previous reading.")
 
-        reading.reading_status = "VOIDED"
-        reading.save()
-
+        #reading.reading_status = "VOIDED"
+        #reading.save()
         
         # Update values
         reading.reading_value = new_value
         reading.previous_reading = previous
         reading.consumption = new_value - previous
-        created_reading = MeterReadingService.create_reading(tenant=tenant,
+        reading.reading_status="EDITED"
+
+        '''created_reading = MeterReadingService.create_reading(tenant=tenant,
                                            branch=reading.branch,
                                            meter=reading.meter,
-                                           reading_value=new_value
-                                           )
+                                           reading_value=new_value,
+                                           reader=reading.reader
+                                           )'''
+        created_reading = reading.save()
         '''# Regenerate bill if exists
         if bill:
             from bills.services import BillingService
@@ -546,18 +549,19 @@ class MeterReadingService:
                     amount=item["amount"],
                 )
         '''
+
         # Auto-generate bill if manual generation is disabled
         from bills.services import BillingService
         settings = BillingService.get_settings(tenant)
 
         if not settings.manual_bill_generation:
             try:
-                BillingService.generate_bill(created_reading)
-                created_reading.reading_status = "GENERATED"
+                BillingService.generate_bill(reading)
+                reading.reading_status = "GENERATED"
             except Exception:
-                created_reading.reading_status = "FAILED"
+                reading.reading_status = "FAILED"
         
-            created_reading.save()
+            reading.save()
 
         return reading
     

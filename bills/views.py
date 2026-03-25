@@ -1,7 +1,5 @@
 import calendar
 from decimal import Decimal
-from multiprocessing import context
-from urllib import request
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -19,7 +17,7 @@ from django.views.generic import CreateView, ListView
 
 from bills.forms import BillingSettingsForm, MeterReadingForm
 from bills.models import Bill, BillingSettings, MeterReading
-from bills.services import MeterReadingService
+from bills.services import BillingService, MeterReadingService
 from core.models import TenantUserRole
 from tenant_utils.decorators import permission
 
@@ -280,10 +278,10 @@ class MeterReadingCreateView(CreateView):
             MeterReadingService.create_reading(
                 tenant=self.request.tenant,
                 branch=self.request.branch,
-                reader=self.request.user,
                 meter=form.cleaned_data["meter"],
                 reading_value=form.cleaned_data["reading_value"],
-            )
+                reader=self.request.user,
+            ) 
             messages.success(self.request, "Meter reading recorded successfully.")
         except IntegrityError: 
             messages.error(self.request, "A reading for this meter on this date already exists.")
@@ -407,6 +405,49 @@ def meter_reading_edit(request, pk):
             messages.error(request, str(e))
 
     return render(request, "bills/meter_reading_edit.html", {"reading": reading})
+
+@login_required
+@permission("bills.add_bill")
+@transaction.atomic
+def manual_bill_generation(request, pk):
+    
+    tenant = request.tenant
+
+    reading = get_object_or_404(
+        MeterReading,
+        pk=pk,
+        tenant=tenant,
+        branch=request.branch
+    )
+
+    if hasattr(reading, "bill") and reading.bill.status == "SOLD":
+        messages.warning(request, "Cannot generate bill for a reading its bill already sold")
+        return redirect("meter_reading_detail", pk=reading.pk)
+
+    if hasattr(reading, "bill") and reading.bill.status == "VOIDED":
+        messages.warning(request, "Bill associated to this reading is available")
+        return redirect("meter_reading_detail", pk=reading.pk)
+    
+    if not (reading.reading_status == 'FRESH' or
+             reading.reading_status == 'FAILED' or
+               reading.reading_status == 'BILVOIDED' or
+                 reading.reading_status == 'EDITED'):
+        messages.warning(request, "Bill cannot be generated")
+        return redirect("meter_reading_detail", pk=reading.pk)
+    
+    #if request.method == "POST":
+
+    try:
+        BillingService.generate_bill( reading)
+        reading.reading_status="GENERATED"
+        reading.save()
+        messages.success(request, "Bill generated successfully.")
+        return redirect("meter_reading_detail", pk=reading.pk)
+    except IntegrityError:
+        messages.error(request, "Bill for this reading already exists.")
+    except Exception as e:
+        messages.error(request, str(e))
+    return render(request, "bills/meter_reading_detail.html", {"reading": reading})
 
 
 def edit_billing_settings(request):
