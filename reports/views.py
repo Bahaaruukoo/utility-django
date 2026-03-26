@@ -246,8 +246,9 @@ def debt_aging_report(request):
 def dashboard(request):
 
     tenant = request.tenant
+    branch = request.branch
 
-    data = get_dashboard_data(tenant)
+    data = get_dashboard_data(tenant, branch)
 
    
     context = {

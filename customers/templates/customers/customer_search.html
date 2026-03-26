@@ -49,6 +49,7 @@
                         <tr>
                             <th>Customer No</th>
                             <th>Name</th>
+                            <th>Kebele</th>
                             <th>Phone</th>
                             <th>Type</th>
                             <th>Status</th>
@@ -70,6 +71,7 @@
                                     {{ c.first_name }} {{ c.middle_name }} {{ c.last_name }}
                                 </a>
                             </td>
+                            <td>{{ c.kebele }}</td>
                             <td>{{ c.phone }}</td>
                             <td>{{ c.get_customer_type_display }}</td>
                             <td>

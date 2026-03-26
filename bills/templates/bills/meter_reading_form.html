@@ -3,26 +3,50 @@
 
 {% block content %}
 
-<div class="container">
-    <h4>Enter Meter Reading</h4>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-    <form method="post">
+<div class="container mt-4" style="max-width: 600px;">
+
+    <h4 class="mb-4">Enter Meter Reading</h4>
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <form method="post" class="p-4 border rounded shadow-sm bg-white">
         {% csrf_token %}
 
         <div class="mb-3">
-            <label class="form-label">Meter</label>
+            <label class="form-label fw-semibold">Meter</label>
             {{ form.meter }}
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Reading Value</label>
+            <label class="form-label fw-semibold">Reading Value</label>
             {{ form.reading_value }}
         </div>
 
-        <button type="submit" class="btn btn-primary">
+        <button type="submit" class="btn btn-primary w-100">
             Save Reading
         </button>
     </form>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    new TomSelect("#id_meter", {
+        create: false,
+        sortField: {
+            field: "text",
+            direction: "asc"
+        },
+        placeholder: "Search meter..."
+    });
+});
+</script>
+
 
 {% endblock %}

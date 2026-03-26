@@ -7,16 +7,17 @@ class MeterReadingForm(forms.ModelForm):
     class Meta:
         model = MeterReading
         fields = ["meter", "reading_value"]
+        widgets = {
+            "meter": forms.Select(attrs={"class": "form-select"}),
+            "reading_value": forms.NumberInput(attrs={"class": "form-control"}),
+        }
 
     def __init__(self, *args, **kwargs):
         tenant = kwargs.pop("tenant")
         super().__init__(*args, **kwargs)
 
-        # Only show meters belonging to this tenant
         self.fields["meter"].queryset = (
-            self.fields["meter"]
-            .queryset
-            .filter(tenant=tenant)
+            self.fields["meter"].queryset.filter(tenant=tenant)
         )
 
 class BillingSettingsForm(forms.ModelForm):

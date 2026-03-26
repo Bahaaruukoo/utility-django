@@ -12,30 +12,41 @@
     <!-- 🔎 Search & Filter -->
     <form method="get" class="row mb-3">
 
-        <div class="col-md-3">
+        <div class="col-md-2">
             <input type="text"
                    name="search"
                    value="{{ request.GET.search }}"
                    class="form-control"
-                   placeholder="Search by meter number">
+                   placeholder="Search by meter num">
         </div>
-
-        <div class="col-md-3">
+        <div class="col-md-2">
+            <select name="status" class="form-select">
+                <option value="">All Status</option>
+                <option value="INITIAL" {% if status == "Initial" %}selected{% endif %}>Initial</option>
+                <option value="FRESH" {% if status == "Fresh" %}selected{% endif %}>Fresh</option>
+                <option value="FAILED" {% if status == "Failed" %}selected{% endif %}>Failed</option>
+                <option value="GENERATED" {% if status == "Generated" %}selected{% endif %}>Generated</option>
+                <option value="VOIDED" {% if status == "Voided" %}selected{% endif %}>Voided</option>
+                <option value="BILVOIDED" {% if status == "Bill Voided" %}selected{% endif %}>Bill Voided</option>
+                <option value="EDITED" {% if status == "Edited" %}selected{% endif %}>Edited</option>
+            </select>
+        </div>
+        <div class="col-md-2">
             <input type="date"
                    name="start_date"
                    value="{{ request.GET.start_date }}"
                    class="form-control">
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-2">
             <input type="date"
                    name="end_date"
                    value="{{ request.GET.end_date }}"
                    class="form-control">
         </div>
 
-        <div class="col-md-3">
-            <button type="submit" class="btn btn-primary">
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-secondary px-4">
                 Filter
             </button>
         </div>

@@ -7,7 +7,7 @@ from bills.models import Bill
 from payments.models import Payment
 
 
-def get_dashboard_data(tenant):
+def get_dashboard_data(tenant, branch):
 
     today = timezone.now().date()
     year_start = today.replace(month=1, day=1)
@@ -15,6 +15,7 @@ def get_dashboard_data(tenant):
     # TOTAL BILLED
     total_billed = Bill.objects.filter(
         tenant=tenant,
+        branch=branch,
         status__in=["UNSOLD", "SOLD"]
     ).aggregate(
         total=Sum("amount")
@@ -40,7 +41,8 @@ def get_dashboard_data(tenant):
     # PAYMENT METHODS
     payment_methods = Payment.objects.filter(
         tenant=tenant,
-        status="COMPLETED"
+        status="COMPLETED",
+        is_reversal=False
     ).values(
         "payment_method"
     ).annotate(
@@ -51,6 +53,7 @@ def get_dashboard_data(tenant):
     monthly_collections = Payment.objects.filter(
         tenant=tenant,
         status="COMPLETED",
+        is_reversal=False,
         payment_date__year=today.year
     ).extra(
         {"month": "EXTRACT(month FROM payment_date)"}

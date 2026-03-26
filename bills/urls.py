@@ -7,8 +7,8 @@ from bills.views import (MeterReadingCreateView, MeterReadingListView,
                          meter_reading_edit, void_bill)
 
 urlpatterns = [
-    path("create/", MeterReadingCreateView.as_view(), name="meter_reading_create"),
     path("readings/", MeterReadingListView.as_view(), name="meter_reading_list"),
+    path("readings/create/", MeterReadingCreateView.as_view(), name="meter_reading_create"),
     path("readings/<int:pk>/", meter_reading_detail, name="meter_reading_detail"),
     path("readings/<int:pk>/edit/", meter_reading_edit, name="meter_reading_edit"),
     path("settings/edit/", edit_billing_settings, name="edit_billing_settings"),

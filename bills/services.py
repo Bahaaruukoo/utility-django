@@ -377,6 +377,7 @@ class MeterReadingService:
         """
         Safely creates a meter reading and optionally generates bill.
         """
+
         if branch is None:
             raise ValidationError("Branch is required.")
         

@@ -267,6 +267,7 @@ class MeterReadingCreateView(CreateView):
     template_name = "bills/meter_reading_form.html"
     form_class = MeterReadingForm
     success_url = reverse_lazy("meter_reading_create")
+    print(".......................6ff......")
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -291,17 +292,22 @@ class MeterReadingCreateView(CreateView):
 
         return redirect(self.success_url)
 
+    def form_invalid(self, form):
+        print("FORM INVALID:", form.errors)
+        #logging here
+        return super().form_invalid(form)
+    
 @method_decorator(login_required, name="dispatch")
 class MeterReadingListView(ListView):
     model = MeterReading
     template_name = "bills/meter_reading_list.html"
     context_object_name = "readings"
-    paginate_by = 10
+
+    paginate_by = 20
 
     def get_queryset(self):
         tenant = self.request.tenant
-        branch = self.request.branch        
-        print("Tenant admin - showing all readings for tenant", tenant)
+        branch = self.request.branch
 
         if is_branch_member(self.request):
             queryset = MeterReading.objects.filter(
@@ -323,12 +329,16 @@ class MeterReadingListView(ListView):
         # 📅 Filter by date range
         start_date = self.request.GET.get("start_date")
         end_date = self.request.GET.get("end_date")
+        status = self.request.GET.get("status")
 
         if start_date:
             queryset = queryset.filter(reading_date__gte=start_date)
 
         if end_date:
             queryset = queryset.filter(reading_date__lte=end_date)
+
+        if status:
+            queryset = queryset.filter(reading_status=status)
 
         return queryset
 
