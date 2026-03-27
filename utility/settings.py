@@ -247,6 +247,8 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 DOMAIN = 'localhost'
 PORT = ':8000'
 
+CSRF_FAILURE_VIEW = "portal.views.csrf_failure"
+
 # ------------------------------------------------------------------------------
 # DEFAULTS
 # ------------------------------------------------------------------------------
