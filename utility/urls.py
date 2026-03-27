@@ -37,3 +37,8 @@ urlpatterns = [
     path("", include("core.urls")),
 
 ]
+
+handler400 = "portal.views.bad_request"
+handler403 = "portal.views.permission_denied"
+handler404 = "portal.views.page_not_found"
+handler500 = "portal.views.server_error"

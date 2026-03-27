@@ -1,0 +1,10 @@
+{% extends "portal/base.html" %}
+{% block content %}
+<div class="container py-5 text-center">
+    <h1 class="display-4 text-danger">Security Error</h1>
+    <h3 class="mb-3">CSRF Verification Failed</h3>
+    <p>Your session may have expired or the form was submitted incorrectly.</p>
+    <a href="javascript:history.back()" class="btn btn-secondary mt-3">Go Back</a>
+    <a href="/" class="btn btn-primary mt-3 ms-2">Return Home</a>
+</div>
+{% endblock %}
