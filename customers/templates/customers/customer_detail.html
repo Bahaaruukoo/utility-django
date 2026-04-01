@@ -7,7 +7,7 @@
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-dark text-white">
             <h5 class="mb-0">
-                Customer Detail - {{ customer.customer_no }}
+                Customer Number: {{ customer.customer_no }}
             </h5>
         </div>
 
@@ -16,7 +16,7 @@
             <div class="row">
 
                 <div class="col-md-6">
-                    <p><strong>Full Name:</strong> {{ customer.full_name }}</p>
+                    <p><strong>Customer Name:</strong> {{ customer.full_name }}</p>
                     <p><strong>Phone:</strong> {{ customer.phone }}</p>
                     <p><strong>Email:</strong> {{ customer.email }}</p>
                     <p><strong>Customer Type:</strong> {{ customer.get_customer_type_display }}</p>
@@ -24,7 +24,7 @@
 
                 <div class="col-md-6">
                     <p><strong>Bill Number:</strong> 
-                        {% for assignment in active_assignment %} 
+                        {% for assignment in assignment_history %} 
                             {{ assignment.meter.bill_number }},
                         {% endfor %}
                     </p>
@@ -62,9 +62,24 @@
 
     <!-- Assignment History -->
     <div class="card shadow-sm">
-        <div class="card-header bg-secondary text-white">
-            Meter Assignment History
+        <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+            <div>
+                Meter Assignment History
+            </div>
+            <div> 
+                {% if assignment_history %}
+                    <a href="{% url 'customer_receipts' customer.customer_no %}"
+   class="text-decoration-none text-white"
+   onclick="openReceiptWindow(this.href); return false;">
+    Receipts
+</a>
+
+                {% else %}
+                    <span class="text-white">No receipts available.</span>
+                {% endif %}
+            </div>
         </div>
+        
         <div class="card-body">
 
             <table class="table table-sm table-striped">
@@ -122,4 +137,23 @@
         </div>
     </div>
 </div>
+<script>
+    function openReceiptWindow(url) {
+        const width = 900;
+        const height = 700;
+
+        // Calculate center position
+        const left = (window.screen.width - width) / 2;
+        const top = (window.screen.height - height) / 2;
+
+        window.open(
+            url,
+            "_blank",
+            `toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,
+            width=${width},height=${height},top=${top},left=${left}`
+        );
+    }
+</script>
+
+
 {% endblock %}

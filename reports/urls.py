@@ -3,8 +3,8 @@ from django.urls import path
 from .views import (billing_report_detail, billing_report_generate,
                     collection_report_detail, collection_report_generate,
                     dashboard, debt_aging_report, kebele_category_report,
-                    print_session_report_view, session_financial_report,
-                    statistics_view)
+                    print_session_report_view, receipts_report,
+                    session_financial_report, statistics_view)
 
 urlpatterns = [
     path("statistics/monthly/", statistics_view, name="monthly_statistics"),
@@ -18,4 +18,6 @@ urlpatterns = [
     path("session/<int:session_id>", print_session_report_view, name="report_cashier_sessions_print"),
     path("dashboard/", dashboard, name="report_dashboard"),
     path("kebele-category/", kebele_category_report, name="kebele_category"),
+    path("receipts/", receipts_report, name="receipts_report"),
+
 ]

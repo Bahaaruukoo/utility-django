@@ -2,10 +2,20 @@
 
 {% block content %}
 
-<div class="container">
+<div class="container mt-1">
 
     <div class="d-flex justify-content-between align-items-center mb-1">
-        <h4 class="mb-1">Meter Readings</h4>    
+        <h4 class="mb-1">
+            <a href="{% url 'meter_reading_list' %}" class="text-decoration-none text-dark">
+                Meter Readings
+            </a>
+            {% if month_name %}
+                <span> || For {{ month_name }}</span>
+            {% else %}
+                <span> ||  {{ start_date|default:"up"  }} to {{ end_date|default:"now"  }}  </span>
+            {% endif %}
+        </h4>
+
         <a href="{% url 'meter_reading_create' %}" class="btn btn-sm btn-primary">Add Reading</a>
     </div>
 
@@ -32,17 +42,11 @@
             </select>
         </div>
         <div class="col-md-2">
-            <input type="date"
-                   name="start_date"
-                   value="{{ request.GET.start_date }}"
-                   class="form-control">
+            <input type="date" name="start_date" value="{{ start_date }}" class="form-control">
         </div>
 
         <div class="col-md-2">
-            <input type="date"
-                   name="end_date"
-                   value="{{ request.GET.end_date }}"
-                   class="form-control">
+            <input type="date" name="end_date" value="{{ end_date }}" class="form-control">
         </div>
 
         <div class="col-md-2">

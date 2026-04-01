@@ -1,7 +1,9 @@
+import logging
 from functools import wraps
 
 from django.core.exceptions import PermissionDenied
 
+logger = logging.getLogger("app")
 
 def permission(permissions):
     """
@@ -18,7 +20,8 @@ def permission(permissions):
 
             user = request.user
 
-            if not user.is_authenticated:
+            if not user.is_authenticated:                
+                logger.warning(f"Authentication required")
                 raise PermissionDenied("Authentication required")
 
             # platform admin bypass
@@ -29,6 +32,7 @@ def permission(permissions):
             request_tenant = getattr(request, "tenant", None)
 
             if request_tenant and user.tenant_id != request_tenant.id:
+                logger.warning(f"Cross tenant access denied")
                 raise PermissionDenied("Cross tenant access denied")
 
             # branch check
@@ -36,17 +40,16 @@ def permission(permissions):
                 user_branch = request.branch # getattr(user, "branch_id", None)
 
                 if user_branch is None:
+                    logger.warning(f"Branch not found. User is not part of a branch")
                     raise PermissionDenied("Branch not assigned")
             #print(request.user.get_all_permissions())
             # permission check
             for perm in permissions:
                 if user.has_perm(perm):
                     return view_func(request, *args, **kwargs)
-                    
-            raise PermissionDenied(f"Missing permission: {perm}")
-
             
-
+            logger.warning(f"Missing permission: {perm}")
+            raise PermissionDenied(f"Missing permission: {perm}")
         return wrapper
 
     return decorator

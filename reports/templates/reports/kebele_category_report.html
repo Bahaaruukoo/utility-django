@@ -108,7 +108,7 @@
     {% endif %}
 
     <div class="mt-2">
-    <h5 class="bg-primary text-white p-1">Grand Total per Category</h5>
+    <h5 class="bg-secondary text-white p-1"> Total by Category</h5>
 
     <table class="table table-bordered table-striped table-sm">
         <thead class="thead-dark">
@@ -193,9 +193,10 @@
     {% endif %}
 
     <!-- EXPORT BUTTON -->
-    <form method="get" action="#">
+    <form method="get">
         <input type="hidden" name="month" value="{{ selectedMonth }}">
         <input type="hidden" name="year" value="{{ selectedYear }}">
+        <input type="hidden" name="export" value="pdf">
         <button class="btn btn-danger">Export as PDF</button>
     </form>
 

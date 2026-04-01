@@ -12,6 +12,8 @@ from django.utils import timezone
 #from forms import CustomerForm
 from customers.forms import CustomerForm
 from customers.models import Customer, Kebele, MeterAssignment
+from payments.models import Receipt
+from reports.forms import ReceiptsReportForm
 from tenant_utils.decorators import permission
 
 from .forms import CustomerForm, MeterAssignmentForm, MeterForm
@@ -21,11 +23,12 @@ from .services import create_customer
 
 User = get_user_model()
 
-@login_required
+'''@login_required
 @permission("customers.view_customer")
 def customer_search(request):
     search = request.GET.get("q")
-
+    branch = request.branch
+    print(f"Branch in search view: {search} - {branch}")
     # No search yet → show empty list
     if not search:
         return render(request, "customers/customer_search.html", {
@@ -34,18 +37,26 @@ def customer_search(request):
             "searched": False
         })
 
+    if not branch:
+        messages.error(request, "You must be part of this branch to search customers.")
+        return render(request, "customers/customer_search.html", {
+            "customers": [],
+            "search": search,
+            "searched": True
+        })
+    search = search.strip()
     # Search performed → filter results
-    customers = Customer.objects.all()
 
     # Branch restriction
-    if getattr(request, "branch", None):
-        customers = customers.filter(
-            meter_assignments__branch=request.branch,
-            meter_assignments__is_active=True
+    #if getattr(request, "branch", None):
+    customers = Customer.objects.filter(
+        meter_assignments__branch=branch,
+        meter_assignments__is_active=True
         ).distinct()
 
     customers = customers.filter(
         Q(first_name__icontains=search) |
+        Q(middle_name__icontains=search) |
         Q(last_name__icontains=search) |
         Q(phone__icontains=search)
     )
@@ -55,6 +66,58 @@ def customer_search(request):
         "search": search,
         "searched": True
     })
+    '''
+
+@login_required
+@permission("customers.view_customer")
+def customer_search(request):
+    search = request.GET.get("q", "").strip()
+    branch = request.branch
+
+    if not search:
+        return render(request, "customers/customer_search.html", {
+            "customers": [],
+            "search": "",
+            "searched": False
+        })
+
+    if not branch:
+        messages.error(request, "You must be part of this branch to search customers.")
+        return render(request, "customers/customer_search.html", {
+            "customers": [],
+            "search": search,
+            "searched": True
+        })
+
+    # Base queryset restricted by branch
+    '''customers = Customer.objects.filter(
+        meter_assignments__branch=branch,
+        #meter_assignments__is_active=True
+    ).distinct()'''
+    customers = Customer.objects.all()
+
+    # Handle NULL middle names
+    from django.db.models import Value
+    from django.db.models.functions import Coalesce
+
+    customers = customers.annotate(
+        middle_name_clean=Coalesce("middle_name", Value(""))
+    )
+
+    # Apply search
+    customers = customers.filter(
+        Q(first_name__icontains=search) |
+        Q(middle_name_clean__icontains=search) |
+        Q(last_name__icontains=search) |
+        Q(phone__icontains=search)
+    )
+
+    return render(request, "customers/customer_search.html", {
+        "customers": customers,
+        "search": search,
+        "searched": True
+    })
+
 
 @login_required
 @permission("customers.add_customer")
@@ -597,3 +660,40 @@ def meter_assignment_update(request, pk):
         "assignment": assignment,
         "edit_mode": True
     })
+
+
+def find_customer_receipts(request, customer_no):
+    tenant = getattr(request, "tenant", None)
+
+    if not tenant:
+        return HttpResponseForbidden("No tenant context.")
+
+    customer = get_object_or_404(
+        Customer,
+        customer_no=customer_no,
+        tenant=tenant
+    )
+
+    receipts_qs = Receipt.objects.filter(
+        tenant=tenant,
+        payment__customer=customer
+    ).order_by("-receipt_number")
+
+    '''return render(request, "customers/customer_receipts.html", {
+        "receipts_report": receipts_qs.order_by("-receipt_number")
+    })
+    '''
+    # Pagination
+    paginator = Paginator(receipts_qs, 24)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    return render(
+        request,
+        "customers/customer_receipts.html",
+        {
+            "receipts_report": page_obj,
+            "page_obj": page_obj,
+            "customer": customer,
+        },
+    )

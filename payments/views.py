@@ -902,9 +902,9 @@ def payment_list_view(request):
 
     return render(request, "payments/payment_list.html", context)
 
-@login_required
+'''@login_required
 @permission("payments.change_paymentreversal")
-def reverse_payment_approve_view(request, payment_id):
+def reverse_payment_approve_view__(request, payment_id):
 
     tenant = request.tenant
     user = request.user
@@ -954,7 +954,7 @@ def reverse_payment_approve_view(request, payment_id):
         "payment": payment,
         "form": form,
     })
-
+'''
 @login_required
 @permission("payments.add_paymentreversal")
 def request_reversal_view(request, payment_id):

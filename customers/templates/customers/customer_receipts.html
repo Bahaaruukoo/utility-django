@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Receipt</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container py-4">
+
+    <div class="container mt-1">
+            <h5 class="mb-0">Receipts for {{ customer.full_name }}</h5>
+
+        <div class="card-body">
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Receipt Number</th>
+                        <th>Customer</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Voided</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for receipt in receipts_report %}
+                    <tr class="{% if receipt.is_void %}table-danger{% endif %} ">
+                        <td><a href="{% url 'print_receipt' receipt.id %}" 
+                            class="text-decoration-none">{{ receipt.receipt_number }}</a></td>
+                        <td>{{ receipt.payment.customer }}</td>
+                        <td class="text-center">{{ receipt.payment.amount_paid }}</td>
+                        <td>{{ receipt.issued_date }}</td>
+                        <td>{{ receipt.is_void }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">No receipts found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>  
+    </div>
+    {% include 'portal/includes/pagination.html' with page_obj=receipts_report %}
+</div>
+
+</body>

@@ -16,4 +16,5 @@ urlpatterns = [
     path("meter/assigns/<int:pk>/", views.meter_assignment_detail, name="meter_assignment_detail"),
     path("meter/assigns/<int:pk>/edit/", views.meter_assignment_update, name="meter_assignment_update"),
     path("meter/assigns/<int:pk>/close/", views.close_assignment, name="close_assignment"),
+    path("customer/<str:customer_no>/receipts/", views.find_customer_receipts, name="customer_receipts"),
 ]

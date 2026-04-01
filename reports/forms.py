@@ -27,6 +27,13 @@ class BillingReportForm(forms.Form):
         widget=forms.Select(attrs={"class": "form-select"})
     )
 
+    force = forms.BooleanField(
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={"class": "form-check-input"})
+    )
+
+
     def clean_year(self):
         return int(self.cleaned_data["year"])
 
@@ -84,11 +91,6 @@ class CollectionReportForm(forms.Form):
                 tenant=tenant
             )
 
-from django import forms
-
-from tenant_utils.models import Branch
-
-
 class SessionReportForm(forms.Form):
 
     start_date = forms.DateField(
@@ -112,3 +114,20 @@ class SessionReportForm(forms.Form):
         if tenant:
             self.fields["branch"].queryset = Branch.objects.filter(tenant=tenant)
 
+class ReceiptsReportForm(forms.Form):
+
+    receipt_number = forms.CharField(
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Receipt Number"})
+    )
+
+    start_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"})
+    )
+
+    end_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"})
+    )

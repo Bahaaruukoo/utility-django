@@ -5,16 +5,22 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Count, F, Max, Min, Sum
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Table, TableStyle
 
 from bills.models import Bill
 from customers.models import Customer
-from payments.models import CashierSession, PaymentAllocation
+from payments.models import CashierSession, PaymentAllocation, Receipt
 from reports.forms import (BillingReportForm, CollectionReportForm,
-                           SessionReportForm)
+                           ReceiptsReportForm, SessionReportForm)
 from reports.models import (BillReport, CashierSessionReport, CollectionReport,
                             MonthlyStatistics)
+from reports.report_service import export_kebele_pdf
 from reports.services.billing_report_service import \
     generate_monthly_billing_report
 from reports.services.collection_report_service import \
@@ -103,12 +109,14 @@ def billing_report_generate(request):
 
             year = form.cleaned_data["year"]
             month = form.cleaned_data["month"]
+            force = form.cleaned_data["force"]
 
             report = generate_monthly_billing_report(
                 tenant=request.user.tenant,
                 year=year,
                 month=month,
-                user=request.user
+                user=request.user,
+                force=force
             )
 
             return redirect(
@@ -116,11 +124,7 @@ def billing_report_generate(request):
                 report_id=report.id
             )
 
-    return render(
-        request,
-        "reports/billing_report_generate.html",
-        {"form": form}
-    )
+    return render(request, "reports/billing_report_generate.html", {"form": form})
 
 @login_required
 def billing_report_detail(request, report_id):
@@ -538,6 +542,19 @@ def kebele_category_report(request):
     year = timezone.now().year
     years = range(year - 5, year + 1)
 
+    if request.GET.get("export") == "pdf":
+        return export_kebele_pdf(
+            "Analysis by Kebele and Customer Category",
+            reports,
+            category_totals_list,
+            grand_totals,
+            request.tenant,
+            metadata={
+                "Month": month,
+                "Year": year,
+            }
+    )
+
     return render(request, "reports/kebele_category_report.html", {
         "page_obj": page_obj,
         "reportsGroupedByKebele": page_obj.object_list,
@@ -549,3 +566,56 @@ def kebele_category_report(request):
         "categoryTotals": category_totals_list,
     })
 
+
+def receipts_report(request):
+    receipts_qs = Receipt.objects.none()
+
+    has_filters = any([
+        request.GET.get("receipt_number"),
+        request.GET.get("start_date"),
+        request.GET.get("end_date"),
+    ])
+
+    form = ReceiptsReportForm(request.GET if has_filters else None)
+    
+
+    if has_filters and form.is_valid():
+        receipt_number = form.cleaned_data.get("receipt_number")
+        start_date = form.cleaned_data.get("start_date")
+        end_date = form.cleaned_data.get("end_date")
+
+        receipts_qs = Receipt.objects.select_related(
+            "payment", "payment__customer", "payment__bill"
+        )
+
+        if receipt_number:
+            receipts_qs = receipts_qs.filter(
+                receipt_number__icontains=receipt_number.strip()
+            )
+
+        if start_date:
+            receipts_qs = receipts_qs.filter(
+                issued_date__date__gte=start_date
+            )
+
+        if end_date:
+            receipts_qs = receipts_qs.filter(
+                issued_date__date__lte=end_date
+            )
+
+        receipts_qs = receipts_qs.order_by("receipt_number")
+
+    # Pagination
+    paginator = Paginator(receipts_qs, 20)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    return render(
+        request,
+        "reports/receipts_report.html",
+        {
+            "form": form,
+            "receipts_report": page_obj,
+            "page_obj": page_obj,
+        },
+    )

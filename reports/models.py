@@ -2,7 +2,6 @@ from django.conf import settings
 from django.db import models
 
 from bills.models import Bill
-from customers.models import Customer
 from payments.models import CashierSession, Payment
 from tenant_utils.models import Branch, TenantAwareModel
 

@@ -12,7 +12,7 @@ logger = logging.getLogger("app")
 
 
 @transaction.atomic
-def generate_receipt(payment):
+def generate_receipt(payment, is_voided=False):
 
     logger.info(f"Generating receipt for payment_id={payment.id}")
 
@@ -37,7 +37,8 @@ def generate_receipt(payment):
     else:
         next_seq = 1
 
-    receipt_number = f"RCPT-{timezone.now().year}-{next_seq:07d}"
+    #receipt_number = f"RCPT-{timezone.now().year}-{next_seq:07d}"
+    receipt_number = f"{next_seq:07d}"
     logger.info(f"Next receipt number generated payment_id={payment.id} receipt_number={receipt_number}")
 
     # Create deterministic hash
@@ -58,7 +59,8 @@ def generate_receipt(payment):
         tenant=payment.tenant,
         payment=payment,
         receipt_number=receipt_number,
-        signature_hash=signature
+        signature_hash=signature,
+        is_voided=is_voided,
     )
 
     logger.info(f"Receipt created receipt_id={receipt.id} payment_id={payment.id}")

@@ -35,7 +35,10 @@
 
                 <div class="col-md-6 text-md-end">
                     Meter No: {{ bill.meter.meter_number }}<br>
-                    Bill Period: {{ bill.bill_period }}<br>
+                    Bill Period: {{ bill.bill_period|date:"F Y" }} <br>
+                    Bill #: {{ bill.bill_number }}<br>
+                    
+
                     Status:
                     {% if bill.status == "UNSOLD" %}
                         <span class="badge bg-warning text-dark">Unsold</span>

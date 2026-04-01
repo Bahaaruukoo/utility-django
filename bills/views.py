@@ -19,6 +19,7 @@ from bills.forms import BillingSettingsForm, MeterReadingForm
 from bills.models import Bill, BillingSettings, MeterReading
 from bills.services import BillingService, MeterReadingService
 from core.models import TenantUserRole
+from payments.models import Receipt
 from tenant_utils.decorators import permission
 
 from .models import Bill
@@ -69,6 +70,7 @@ def bill_list(request):
             Q(customer__first_name__icontains=search) |
             Q(customer__last_name__icontains=search) |
             Q(meter__meter_number__icontains=search) |
+            Q(meter__bill_number__icontains=search) |
             Q(invoice_number__icontains=search)
         )
 
@@ -158,7 +160,9 @@ def bill_detail_print(request, pk):
     completed_payment = bill.payments.filter(
             status="COMPLETED"
         ).select_related("receipt").first()
-    
+
+    receipt = Receipt.objects.filter(payment=completed_payment).first()
+
     return render(request, "bills/bill_detail_print.html", {
         "bill": bill,
         "late_fee": bill.calculate_late_fee(),
@@ -246,7 +250,14 @@ def void_bill(request, pk):
         if bill.branch != request.branch:
             messages.error(request, "Unauthorized access.")
             return redirect("bill-list")
-
+    if bill.status == "VOIDED":
+        messages.warning(request, "Bill already voided.")
+        return redirect("bill-detail", pk=bill.pk)
+    
+    if bill.status == "SOLD":
+        messages.warning(request, "Cannot void a sold bill.")
+        return redirect("bill-detail", pk=bill.pk)
+    
     reason = request.POST.get("reason")
 
     if not reason:
@@ -261,13 +272,13 @@ def void_bill(request, pk):
 
     return redirect("bill-detail", pk=bill.pk)
 
+
 @method_decorator(login_required, name="dispatch")
 @method_decorator(permission("bills.add_meterreading"), name="dispatch")
 class MeterReadingCreateView(CreateView):
     template_name = "bills/meter_reading_form.html"
     form_class = MeterReadingForm
     success_url = reverse_lazy("meter_reading_create")
-    print(".......................6ff......")
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -297,50 +308,83 @@ class MeterReadingCreateView(CreateView):
         #logging here
         return super().form_invalid(form)
     
+
 @method_decorator(login_required, name="dispatch")
 class MeterReadingListView(ListView):
     model = MeterReading
     template_name = "bills/meter_reading_list.html"
     context_object_name = "readings"
-
     paginate_by = 20
 
     def get_queryset(self):
         tenant = self.request.tenant
         branch = self.request.branch
+        today = timezone.now().date()
 
         if is_branch_member(self.request):
             queryset = MeterReading.objects.filter(
-                tenant=tenant, branch=branch
+                tenant=tenant,
+                branch=branch
             ).select_related("meter")
-
         else:
             queryset = MeterReading.objects.filter(
                 tenant=tenant
             ).select_related("meter")
 
-        # 🔎 Search by meter number
+        # Filters
         search = self.request.GET.get("search")
-        if search:
-            queryset = queryset.filter(
-                meter__meter_number__icontains=search
-            )
-
-        # 📅 Filter by date range
+        status = self.request.GET.get("status")
         start_date = self.request.GET.get("start_date")
         end_date = self.request.GET.get("end_date")
-        status = self.request.GET.get("status")
 
+        # Search
+        if search:
+            queryset = queryset.filter(meter__meter_number__icontains=search)
+
+        # Date filtering
         if start_date:
             queryset = queryset.filter(reading_date__gte=start_date)
 
         if end_date:
             queryset = queryset.filter(reading_date__lte=end_date)
 
+        # Default: current month
+        if not start_date and not end_date:
+            queryset = queryset.filter(reading_date__month=today.month)
+
+        # Status filter
         if status:
             queryset = queryset.filter(reading_status=status)
 
         return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        today = timezone.now().date()
+
+        # Read GET params
+        start_date = self.request.GET.get("start_date")
+        end_date = self.request.GET.get("end_date")
+
+        # If no filters → use current month
+        if not start_date and not end_date:
+            start_date = today.replace(day=1)
+            end_date = today
+            month_name = calendar.month_name[today.month]
+        else:
+            # Convert to readable values
+            month_name = None  # Not needed when filtering
+
+        context.update({
+            "start_date": start_date,
+            "end_date": end_date,
+            "month_name": month_name,
+            "status": self.request.GET.get("status"),
+        })
+
+        return context
+
 
 @login_required
 @permission("bills.view_meterreading")
@@ -460,7 +504,7 @@ def manual_bill_generation(request, pk):
     return render(request, "bills/meter_reading_detail.html", {"reading": reading})
 
 
-def edit_billing_settings(request):
+'''def edit_billing_settings(request):
     tenant = request.tenant
 
     settings_obj = get_object_or_404(
@@ -486,7 +530,7 @@ def edit_billing_settings(request):
         "bills/edit_billing_settings.html",
         {"form": form}
     )
-
+'''
 
 def is_branch_member(request) -> bool:
         """
