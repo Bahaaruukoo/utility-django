@@ -12,7 +12,7 @@ logger = logging.getLogger("app")
 
 
 @transaction.atomic
-def generate_receipt(payment, is_voided=False):
+def generate_receipt(payment, is_void=False):
 
     logger.info(f"Generating receipt for payment_id={payment.id}")
 
@@ -60,7 +60,7 @@ def generate_receipt(payment, is_voided=False):
         payment=payment,
         receipt_number=receipt_number,
         signature_hash=signature,
-        is_voided=is_voided,
+        is_void=is_void,
     )
 
     logger.info(f"Receipt created receipt_id={receipt.id} payment_id={payment.id}")

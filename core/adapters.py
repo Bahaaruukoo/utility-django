@@ -21,8 +21,7 @@ class NoPublicSignupAdapter(DefaultAccountAdapter):
         If on tenant domain, stay there. If on public, redirect to tenant selection.
         """
         tenant = getattr(request, "tenant", None)
-        print(".....adapter domain name....", self.domain_name)
-        print(".....adapter tenant name....", tenant)
+        
         # Already on tenant domain
         if tenant:
             return super().get_login_redirect_url(request)

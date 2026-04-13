@@ -363,6 +363,7 @@ def register_invitee(request, token):
             # allow tenant admin login (if your tenant admins use /admin on tenant domain)
             user.is_active = True
             user.is_staff = True
+            user.is_admin = True
             user.save()
 
             # assign role safely (ignore duplicates)
@@ -408,6 +409,7 @@ def register_invitee(request, token):
         "invitation": invitation,
         "form": form,
     })
+
     invitation = get_object_or_404(Invitation, token=token, used=False)
 
     if request.method == "POST":

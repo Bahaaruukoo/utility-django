@@ -6,7 +6,6 @@ from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.sessions.models import Session
-from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import path, reverse
 from django.utils import timezone
@@ -237,6 +236,7 @@ class TenantPlatformAdmin(admin.ModelAdmin):
     def send_invite_view(self, request, tenant_id, *args, **kwargs):
         emailService = EmailService()
         tenant = get_object_or_404(Tenant, pk=tenant_id)
+
         if request.method == "POST":
             email = request.POST.get("email")
             role_id = request.POST.get("role")
@@ -252,7 +252,7 @@ class TenantPlatformAdmin(admin.ModelAdmin):
                 ).exists():
                     messages.error(
                         request,
-                        f"A user with email {email} already exists in this tenant."
+                        f"A user with email {email} already exists in this system."
                     )
                     return redirect(request.path)
                 
@@ -294,13 +294,12 @@ class TenantPlatformAdmin(admin.ModelAdmin):
                     tenant_domain=tenant_domain,
                 )
 
-                subject = f"Invitation to join {tenant.name}"
+                subject = f"Invitation to join {tenant.name} utility"
                 message = (
                     f"Hello,\n\n"
                     f"You have been invited to join {tenant.name} as {role.name}.\n\n"
                     f"Register here:\n{invite_link}\n"
                 )
-                send_mail(subject, message, "noreply@example.com", [invite.email])
                 emailService.send_simple_email(subject=subject, message=message, recipient_list=[invite.email])
                 self.message_user(request, f"Invitation sent to {email}", level=messages.SUCCESS)
                 return redirect("platform_admin:tenant_manager_tenant_changelist")

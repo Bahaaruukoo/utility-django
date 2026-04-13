@@ -92,7 +92,7 @@ class Customer(TenantAwareModel):
             )
             next_number = 1 if not last else last.id + 1
             self.customer_no = f"{next_number:06d}"
-        print(".....................", next_number)
+
         super().save(*args, **kwargs)
 
     def full_name(self):

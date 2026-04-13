@@ -4,9 +4,25 @@ from django_tenants.utils import schema_context
 
 
 class Tenant(TenantMixin):
+    SERVCE_TYPE_CHOICES = (
+        ('WATER', 'Water'),
+        ('GAS', 'Gas'),
+        ('ELECTRIC', 'Electric'),  
+    )
+
     name = models.CharField(max_length=100)
     created_on = models.DateField(auto_now_add=True)
     paid_until = models.DateField(auto_now_add=True)
+
+    #org_name = models.CharField(max_length=255, blank=True, null=True)
+    #contect_person = models.CharField(max_length=255, blank=True, null=True)
+    #contact_email = models.EmailField(blank=True, null=True)
+    #contact_phone = models.CharField(max_length=20, blank=True, null=True)
+    #second_phone = models.CharField(max_length=20, blank=True, null=True)
+    #address = models.TextField(blank=True, null=True)
+    #service_type = models.CharField(max_length=50, choices=SERVICE_TYPE_CHOICES, blank=True, null=True)  # e.g. water, gas, electric
+    #is_active = models.BooleanField(default=True)
+   
     on_trial = models.BooleanField(default=False)
 
     '''auto_create_schema = True  # Automatically create schema on tenant creation
@@ -30,7 +46,7 @@ class Tenant(TenantMixin):
             cursor.execute(f'CREATE SCHEMA IF NOT EXISTS "{self.schema_name}"')
 
         self.create_schema(check_if_exists=True)
-        
+
     def delete(self, *args, **kwargs):
         schema = self.schema_name
 

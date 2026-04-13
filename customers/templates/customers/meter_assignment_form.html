@@ -6,9 +6,10 @@
     {% include 'customers/meter_dashboard_header.html' %}
 
     <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header text-black">
             <h5 class="mb-0">Assign Meter to Customer ({{request.branch.name}} branch)</h5>
         </div>
+
         <div class="card-body">
 
             <form method="post">
@@ -25,14 +26,14 @@
                         {{ form.meter|add_class:"form-select" }}
                     </div>
                 </div>
+                
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label>Installation Address</label>
-                         {{ form.installation_address|add_class:"form-control" }}
+                         {{ form.installation_address|add_class:"form-control"|attr:"rows:3" }}
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <div class="col-md-12 mb-3">
                         <label>Building_name</label>
                         {{ form.building_name|add_class:"form-control" }}
                     </div>
@@ -43,7 +44,6 @@
                     </div>
                 </div>
                 
-
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <label>City</label>
@@ -61,7 +61,7 @@
                     </div>
                 </div>
 
-                <div class="row">                    
+                <div class="row">
                     <div class="col-md-6 mb-3">
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -92,7 +92,6 @@
                     </div>
                     
                 </div>
-
                 
                 <div class="d-flex justify-content-between">
                     <a href="{% url 'meter_assignment_list' %}" class="btn btn-secondary">
@@ -108,6 +107,4 @@
         </div>
     </div>
 </div>
-
-
 {% endblock %}

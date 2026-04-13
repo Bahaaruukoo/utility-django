@@ -359,11 +359,11 @@ def meter_update(request, pk):
     tenant = getattr(request, "tenant", None)
 
     if not tenant:
-        return HttpResponseForbidden("No tenant.")
+        return HttpResponseForbidden("No account found.")
 
     # 🔒 Only tenant admin can edit
-    if not is_tenant_admin(request):
-        return HttpResponseForbidden("Not allowed.")
+    '''if not is_tenant_admin(request):
+        return HttpResponseForbidden("Not allowed.")'''
 
     meter = get_object_or_404(
         Meter,
@@ -491,8 +491,17 @@ def assign_meter(request):
             branch=branch 
             
         )
-        print("...............................11........1")
 
+    meters = Meter.objects.filter(
+            tenant=tenant,
+            #status__in=["INACTIVE", "FAULTY", "REMOVED"]  # NOT ACTIVE
+        ).exclude(
+            assignments__is_active=True  # no active assignment
+        ).filter(
+            assignments__removal_date__isnull=True  # has removal_date
+        ).distinct()
+
+    form.fields["meter"].queryset = meters
     return render(request, "customers/meter_assignment_form.html", {
         "form": form
     })
@@ -697,3 +706,4 @@ def find_customer_receipts(request, customer_no):
             "customer": customer,
         },
     )
+

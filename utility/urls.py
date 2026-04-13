@@ -13,7 +13,6 @@ urlpatterns = [
     # Tenant home pages
 
     path("", landing_page, name="landing"),
-    #path("page/", core_views.home, name="home"),
 
     path("b/<slug:branch_code>/", select_branch, name="select_branch"),
     # ✅ Tenant admin (TENANT DOMAINS ONLY)
