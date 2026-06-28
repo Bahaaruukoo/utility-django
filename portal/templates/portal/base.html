@@ -153,15 +153,21 @@
                         <i class="bi bi-cash-coin ms-2"></i>
                         <span>Cashier</span>
                     </a>
+                    {% if perms.payments.approve_cashier_session %}
+                        <a href="{% url 'supervisor_dashboard' %}" class="menu-link">
+                            <i class="bi bi-cash-coin ms-2"></i>
+                            <span>Supervisor</span>
+                        </a>
+                    {% endif %}
 
+                    <!--
                     {% has_role request.user "MANAGER" as is_manager %}
-
                     {% if is_manager %}
                     <a href="{% url 'supervisor_dashboard' %}" class="menu-link">
                         <i class="bi bi-cash-coin ms-2"></i>
                         <span>Supervisor</span>
                     </a>
-                    {% endif %}
+                    {% endif %} -->
                 </div>
             </div>
 
@@ -177,6 +183,12 @@
                     <a href="{% url 'report_dashboard' %}" class="menu-link">
                         <i class="bi bi-receipt ms-2"></i>
                         <span>Report</span>
+                    </a>
+                </div>
+                <div class="collapse show" id="reportsMenu">
+                    <a href="#" class="menu-link">
+                        <i class="bi bi-receipt ms-2"></i>
+                        <span>Reading Progress</span>
                     </a>
                 </div>
                  <div class="collapse show" id="reportsMenu">
@@ -244,7 +256,7 @@
     <div>
         
     <footer class=" py-3 bg-light border-top">
-        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
             <span class="text-muted">
                 © {{ now|date:"Y" }} Grid Command Center
             </span>

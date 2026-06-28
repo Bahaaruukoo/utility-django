@@ -1,5 +1,7 @@
 # core/admin_sites.py
 from django.contrib.admin import AdminSite
+from django.shortcuts import redirect
+from django.urls import reverse
 
 from core.session.admin_sessions import AdminSessionViewsMixin
 
@@ -8,6 +10,11 @@ class PlatformAdminSite(AdminSessionViewsMixin, AdminSite):
     site_header = "Utility Platform Admin"
     site_title = "Platform Admin"
     index_title = ""
+
+    def login(self, request, extra_context=None):
+        return redirect(
+            f"{reverse('account_login')}?next={request.get_full_path()}"
+        )   
 
 class TenantAdminSite(AdminSessionViewsMixin, AdminSite):
     site_header = "Tenant Admin"
@@ -35,10 +42,21 @@ class TenantAdminSite(AdminSessionViewsMixin, AdminSite):
 
         return context
     
+    def login(self, request, extra_context=None):
+        return redirect(
+            f"{reverse('account_login')}?next={request.get_full_path()}"
+        )
+    
 class TenantDomainAdminSite(AdminSessionViewsMixin, AdminSite):
     site_header = "Domain Admin"
     site_title = "Domain Admin"
     index_title = "Domain Administration"
+
+    def login(self, request, extra_context=None):
+        return redirect(
+            f"{reverse('account_login')}?next={request.get_full_path()}"
+        )
+
 
 platform_admin_site = PlatformAdminSite(name="platform_admin")
 tenant_admin_site = TenantAdminSite(name="tenant_admin")

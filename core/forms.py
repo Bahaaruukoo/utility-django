@@ -11,6 +11,9 @@ from tenant_manager.models import Domain, Tenant
 from .models import Role, RoleTemplate, TenantRolePermission, TenantUserRole
 
 User = get_user_model()
+from utility import settings
+
+TENANT_PERMISSION_APPS = settings.TENANT_APPS
 
 
 class CustomSignupForm(forms.Form):
@@ -303,12 +306,13 @@ class ProfileForm(forms.ModelForm):
             "address": forms.Textarea(attrs={"rows": 3}),
         }
 
+TENANT_PERMISSION_APPS = settings.TENANT_APPS
 
 
 class TenantRolePermissionAdminForm(forms.ModelForm):
 
     template = forms.ModelChoiceField(
-        queryset=RoleTemplate.objects.all(),
+        queryset=RoleTemplate.objects.none(),  # set dynamically
         required=False,
         help_text="Select a template to populate permissions."
     )
@@ -317,3 +321,44 @@ class TenantRolePermissionAdminForm(forms.ModelForm):
         model = TenantRolePermission
         fields = "__all__"
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Only show templates that have at least SOME allowed permissions
+        self.fields["template"].queryset = RoleTemplate.objects.filter(
+            permissions__content_type__app_label__in=TENANT_PERMISSION_APPS
+        ).distinct()
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        template = cleaned_data.get("template")
+        perms = cleaned_data.get("permissions")
+
+        # Resolve final permissions (template overrides manual selection)
+        if template:
+            perms = template.permissions.all()
+
+        perms = perms or []  # safe fallback, no DB call
+
+        invalid = [
+            p for p in perms
+            if p.content_type.app_label not in TENANT_PERMISSION_APPS
+        ]
+
+        if invalid:
+            raise ValidationError(
+                "Invalid tenant permissions: "
+                + ", ".join(p.codename for p in invalid)
+            )
+
+        return cleaned_data
+
+    def get_final_permissions(self):
+        template = self.cleaned_data.get("template")
+        perms = self.cleaned_data.get("permissions")
+
+        if template:
+            perms = template.permissions.all()
+
+        return perms

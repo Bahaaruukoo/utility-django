@@ -390,16 +390,20 @@ class TenantRolePermissionTenantAdmin(admin.ModelAdmin):
         obj.tenant = tenant
 
         super().save_model(request, obj, form, change)
-        
-    def save_related(self, request, form, formsets, change):
 
+    def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
 
         obj = form.instance
         template = form.cleaned_data.get("template")
 
         if template:
-            obj.permissions.set(template.permissions.all())
+            obj.permissions.set(
+                template.permissions.filter(
+                    content_type__app_label__in=TENANT_PERMISSION_APPS
+                )
+            )
+
 
     def has_module_permission(self, request):
         return is_tenant_admin(request) or is_branch_admin(request)
@@ -416,6 +420,7 @@ class TenantRolePermissionTenantAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return is_tenant_admin(request) or is_branch_admin(request)
     
+
 class AuditLogAdmin(admin.ModelAdmin):
     list_display = ("created_at",  "action", "actor", "target_repr")
     list_filter = ("tenant", "action", "created_at")
@@ -715,7 +720,7 @@ class SessionAdmin(admin.ModelAdmin):
 
 
 class APIKeyAdmin(admin.ModelAdmin):
-    list_display = ("name", "key", "tenant")
+    list_display = ("name", "hashed_key", "tenant")
     search_fields = ("name",)
     ordering = ("-created_at",)
 

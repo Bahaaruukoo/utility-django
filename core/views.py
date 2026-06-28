@@ -73,6 +73,14 @@ class TenantLoginView(LoginView):
 
     def form_invalid(self, form):
         print("LOGIN ERRORS:", form.errors)
+        errors = form.non_field_errors()
+
+        if any("Too many failed login attempts" in str(e) for e in errors):
+            return render(
+                self.request,
+                "axes/lockout.html",
+                status=429,
+            )
         return super().form_invalid(form)
 
     def _current_tenant(self, request):
@@ -101,7 +109,7 @@ class TenantLoginView(LoginView):
             if tenant and not getattr(request.user, "is_platform_admin", False):
                 if request.user.tenant_id != tenant.id:
                     logout(request)
-                    return HttpResponseForbidden("You do not have access to this tenant.")
+                    return HttpResponseForbidden("Authentication failed.") #"You do not have access to this tenant.")
 
             return self._redirect_after_login(request, request.user)
 
@@ -113,6 +121,10 @@ class TenantLoginView(LoginView):
     def form_valid(self, form):
         response = super().form_valid(form)
 
+        # Login may have been rejected by allauth
+        if not self.request.user.is_authenticated:
+            return response
+        
         request = self.request
         user = request.user
         tenant = self._current_tenant(request)
@@ -129,7 +141,7 @@ class TenantLoginView(LoginView):
         if tenant:
             if user.tenant_id != tenant.id:
                 logout(request)
-                messages.error(request, "You do not have access to this tenant.")
+                messages.error(request,  "Authentication failed.") #"You do not have access to this tenant.")
                 return redirect("account_login")
 
             return HttpResponseRedirect("/portal/")
@@ -140,7 +152,7 @@ class TenantLoginView(LoginView):
         # -----------------------
         if not user.tenant_id:
             logout(request)
-            messages.error(request, "You are not assigned to any tenant.")
+            messages.error(request,  "Authentication failed.") #"You are not assigned to any tenant.")
             return redirect("account_login")
 
         user_tenant = user.tenant
@@ -409,41 +421,3 @@ def register_invitee(request, token):
         "invitation": invitation,
         "form": form,
     })
-
-    invitation = get_object_or_404(Invitation, token=token, used=False)
-
-    if request.method == "POST":
-        password = request.POST.get("password")
-        if not password:
-            messages.error(request, "Password is required.")
-            return redirect(request.path)
-
-        with transaction.atomic():
-            user, created = User.objects.get_or_create(email=invitation.email)
-
-            # ✅ force tenant boundary
-            user.tenant = invitation.tenant  # may be None (platform invite)
-            user.is_active = True
-
-            # If invited to tenant, allow tenant admin login
-            if invitation.tenant_id:
-                user.is_staff = True
-
-            user.set_password(password)
-            user.save()
-
-            # ✅ assign role using TenantUserRole (if you have it)
-            if invitation.tenant_id:
-                TenantUserRole.objects.get_or_create(
-                    user=user,
-                    tenant=invitation.tenant,
-                    role=invitation.role,
-                )
-
-            invitation.used = True
-            invitation.save(update_fields=["used"])
-
-        messages.success(request, f"Account created for {user.email}. You can now log in.")
-        return redirect("/admin/login/")  # will be tenant admin if host is tenant domain
-
-    return render(request, "core/register_invitee.html", {"invitation": invitation})

@@ -20,5 +20,4 @@ def external_create_meter_reading(request):
 
     serializer = "" #MeterReadingSerializer(reading)
 
-     #Response(serializer.data, status=201)
     return Response({"q":"a"}, status=201)

@@ -49,39 +49,25 @@ class Role(models.Model):
 
 
 class TenantRolePermission(models.Model):
-
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
     role = models.ForeignKey("Role", on_delete=models.CASCADE)
     permissions = models.ManyToManyField(Permission, blank=True)
 
-    class Meta:
-        unique_together = ("tenant", "role")
-        verbose_name = "Role Permission"
-        verbose_name_plural = "Role Permissions"
-
-    def __str__(self):
-        tenant = self.tenant.name if self.tenant_id else "No Tenant"
-        role = self.role.name if self.role_id else "No Role"
-        return f"{tenant} - {role}"
-    
-
     def clean(self):
-        """
-        Validate that only tenant-safe permissions are assigned.
-        """
+        super().clean()
 
+        # Only validate AFTER instance exists AND M2M is available in admin flow
         if not self.pk:
-            return  # instance not saved yet, skip validation
+            return
 
-        invalid_perms = []
+        invalid = self.permissions.exclude(
+            content_type__app_label__in=ALLOWED_TENANT_APPS
+        )
 
-        for perm in self.permissions.all():
-            if perm.content_type.app_label not in ALLOWED_TENANT_APPS:
-                invalid_perms.append(perm.codename)
-
-        if invalid_perms:
+        if invalid.exists():
             raise ValidationError(
-                f"These permissions are not allowed for tenants: {', '.join(invalid_perms)}"
+                "These permissions are not allowed for tenants: "
+                + ", ".join(invalid.values_list("codename", flat=True))
             )
 # =====================================================
 # USER ↔ ROLE (per tenant)

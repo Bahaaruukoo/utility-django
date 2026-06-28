@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
@@ -15,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", get_random_secret_key())
 #'django-insecure-cj7i1@@2uqn_hytapgcqx=(=3gg*2xfd8b+p-w+1e2(&l*4b$r'
 DEBUG = os.getenv("DEBUG", "False") == "True"
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS",".utilityko.com").split(",") # "127.0.0.1,localhost").split(",")
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS",".utilityko.com").split(",") # 
 DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
 
 # ------------------------------------------------------------------------------
@@ -45,6 +46,7 @@ SHARED_APPS = [
     'widget_tweaks',
     'slippers',
     'rest_framework',
+    "axes",
 ]
 
 TENANT_APPS = [
@@ -75,6 +77,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    "axes.middleware.AxesMiddleware",
+
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -164,6 +168,8 @@ TENANT_DOMAIN_MODEL = "tenant_manager.Domain"
 
 AUTH_USER_MODEL = "core.CustomUser"
 AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",
+
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
     "core.auth_backends.TenantAwareBackend",   # keep if you need tenant rules
@@ -191,6 +197,7 @@ ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = True
 ACCOUNT_ADAPTER = 'core.adapters.NoPublicSignupAdapter'
 
 ALLAUTH_UI_THEME = 'light'  # or 'dark'
+#ACCOUNT_RATE_LIMITS = {"login_failed": "5/5m/ip", } # limit failed logins to 5 per 5 minutes per IP
 
 # ------------------------------------------------------------------------------
 # PASSWORD VALIDATION
@@ -267,6 +274,41 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+# Enable Axes
+AXES_ENABLED = True
+
+# Lock after 5 failed attempts
+AXES_FAILURE_LIMIT = 5
+
+# Lock for 15 minutes
+AXES_COOLOFF_TIME = timedelta(minutes=15)
+
+# Do not restart the timer during lockout
+AXES_RESET_COOL_OFF_ON_FAILURE_DURING_LOCKOUT = False
+
+# Clear failures after successful login
+AXES_RESET_ON_SUCCESS = True
+
+# allauth login field
+AXES_USERNAME_FORM_FIELD = "login"
+
+# Custom username extractor
+AXES_USERNAME_CALLABLE = "core.axes.get_username"
+
+# Lock by email + IP
+AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
+
+# Keep audit trail
+AXES_ENABLE_ACCESS_FAILURE_LOG = True
+
+# Return HTTP 429
+AXES_HTTP_RESPONSE_CODE = 429
+
+# Optional
+AXES_LOCKOUT_TEMPLATE = "axes/lockout.html"
+
 
 
 LOG_DIR = os.path.join(BASE_DIR, 'logs')
