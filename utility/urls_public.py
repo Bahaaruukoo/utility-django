@@ -14,8 +14,9 @@ urlpatterns = [
     #path("home/", core_views.home, name="home"),
 
     # ✅ Platform admin (PUBLIC ONLY)
-    path("admin/", platform_admin_site.urls),
-    path('admin_tenant/', tenant_domain_admin_site.urls),
+    #path("admin/", platform_admin_site.urls),
+    path("platform/", platform_admin_site.urls, name="platform_admin_login"),
+    path('admin_tenant/', tenant_domain_admin_site.urls, name='tenant_admin_login'),
 
     path("b/<slug:branch_code>/admin/", tenant_admin_site.urls), # Optional: branch-specific admin URLs
     path("b/<slug:branch_code>/", include("core.urls")),

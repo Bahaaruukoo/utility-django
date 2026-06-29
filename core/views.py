@@ -9,11 +9,11 @@ from django.db import IntegrityError, connection, transaction
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 # core/views.py
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 
 from core.audit import audit, log_audit
 from core.models_audit import AuditAction
 from tenant_manager.models import Domain, Tenant
-from utility import settings
 
 from .forms import CreateTenantForm, InviteRegisterForm, ProfileForm
 from .models import CustomUser, Invitation, Profile, Role, TenantUserRole
@@ -34,7 +34,7 @@ class CustomSignupView_(SignupView):
 @login_required
 def home(request):
     if getattr(request.user, "is_platform_admin", False):
-        return redirect("/admin/")
+        return redirect("/plateform/")
     if getattr(request.user, "is_tenant_admin", False):
         return redirect("/admin/")
     if getattr(request.user, "is_branch_admin", False):
@@ -72,7 +72,7 @@ class InviteSignupView(SignupView):
 class TenantLoginView(LoginView):
 
     def form_invalid(self, form):
-        print("LOGIN ERRORS:", form.errors)
+        #print("LOGIN ERRORS:", form.errors)
         errors = form.non_field_errors()
 
         if any("Too many failed login attempts" in str(e) for e in errors):
@@ -93,8 +93,7 @@ class TenantLoginView(LoginView):
 
         # Platform admin → always platform admin
         if getattr(user, "is_platform_admin", False):
-            return HttpResponseRedirect("/admin/")
-
+            return HttpResponseRedirect("/platform/")
         # Tenant users → portal
         return HttpResponseRedirect("/portal/")
 
@@ -104,6 +103,7 @@ class TenantLoginView(LoginView):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             tenant = self._current_tenant(request)
+            print(request.user)
 
             # If on tenant domain, enforce boundary
             if tenant and not getattr(request.user, "is_platform_admin", False):
@@ -133,7 +133,7 @@ class TenantLoginView(LoginView):
         # Platform admin
         # -----------------------
         if getattr(user, "is_platform_admin", False):
-            return HttpResponseRedirect("/admin/")
+            return HttpResponseRedirect("/platform/")
 
         # -----------------------
         # Login on tenant domain
@@ -172,6 +172,7 @@ class TenantLoginView(LoginView):
 
         return HttpResponseRedirect(f"{scheme}://{host}/portal/")
 
+ 
 class TenantSelectionForm(forms.Form):
     tenant = forms.ModelChoiceField(
         queryset=Tenant.objects.none(),
