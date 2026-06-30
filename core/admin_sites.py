@@ -29,16 +29,16 @@ class TenantAdminSite(AdminSessionViewsMixin, AdminSite):
 
         if branch:
             # Branch admin
-            context["site_header"] = f"{branch.name} Branch Admin"
-            context["site_title"] = f"{branch.name} Admin"
+            context["site_header"] = f"{branch.name.capitalize()} Branch Admin"
+            context["site_title"] = f"{branch.name.capitalize()} Admin"
         elif tenant:
             # Tenant admin
-            context["site_header"] = f"{tenant.name} Admin"
-            context["site_title"] = f"{tenant.name} Admin"
+            context["site_header"] = f"{tenant.name.capitalize()} Admin"
+            context["site_title"] = f"{tenant.name.capitalize()} Admin"
         else:
             # Fallback (should rarely happen)
             context["site_header"] = "Admin"
-            context["site_title"] = " Admin"
+            context["site_title"] = "Admin"
 
         return context
     
