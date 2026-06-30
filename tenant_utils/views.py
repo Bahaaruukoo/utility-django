@@ -16,4 +16,4 @@ def select_branch(request, branch_code):
         raise Http404("Branch not found")
 
     request.session["active_branch_id"] = branch.id
-    return redirect("/admin/")
+    return redirect("/tenant/")

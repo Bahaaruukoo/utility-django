@@ -238,6 +238,12 @@ class BranchMembershipAdmin(TenantScopedAdminMixin, admin.ModelAdmin):
             return False
         return bool(getattr(request.user, "is_platform_admin", False) or is_tenant_admin(request))
 
+    def has_delete_permission(self, request, obj=None):
+        if is_branch_admin(request):
+            return False
+        return bool(getattr(request.user, "is_platform_admin", False) or is_tenant_admin(request))
+
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         # tenant admins should only pick users/branches from same tenant
         if not getattr(request.user, "is_platform_admin", False):
