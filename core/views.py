@@ -35,11 +35,23 @@ class CustomSignupView_(SignupView):
 def home(request):
     if getattr(request.user, "is_platform_admin", False):
         return redirect("/plateform/")
+    if getattr(request.user, "is_admin", False):
+        return redirect("/admin/")
     if getattr(request.user, "is_tenant_admin", False):
         return redirect("/admin/")
     if getattr(request.user, "is_branch_admin", False):
         return redirect("/admin/")
     return redirect("/portal/")
+
+def AdminPortalCreateTenantView(request):
+    """
+    View for platform admins to create a new tenant and its admin user.
+    """
+    if not request.user.is_authenticated or not getattr(request.user, "is_platform_admin", False):
+        messages.error(request, "You do not have permission to access this page.")
+        return redirect("account_login")
+
+    return redirect("/admin_tenant/")  # Redirect to the tenant create page
 
 
 class InviteSignupView(SignupView):
