@@ -154,6 +154,8 @@ DATABASE_ROUTERS = (
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
+BINDING_SESSION_KEY = "_binding_token"
+
 if DEBUG:
     BINDING_COOKIE_NAME = "binding_token"
 else:
