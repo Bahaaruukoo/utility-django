@@ -11,6 +11,8 @@ class PlatformAdminSite(AdminSessionViewsMixin, AdminSite):
     site_title = "Platform Admin"
     index_title = ""
 
+    site_url = "/admin_tenant/"  
+
     def login(self, request, extra_context=None):
         return redirect(
             f"{reverse('account_login')}?next={request.get_full_path()}"
