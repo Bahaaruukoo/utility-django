@@ -3,10 +3,17 @@
 from __future__ import annotations
 
 import logging
+import secrets
 import time
 import uuid
 from dataclasses import dataclass
 from typing import Optional
+
+from django.urls import Resolver404, resolve
+from rest_framework import request
+
+logger = logging.getLogger("app")
+
 
 from django.contrib.auth.models import Permission
 from django.contrib.auth.views import redirect_to_login
@@ -22,6 +29,7 @@ from psycopg2 import OperationalError, ProgrammingError
 from core.models import TenantRolePermission, TenantUserRole
 from tenant_utils.models import (  # adjust import to your actual location
     Branch, BranchMembership)
+from utility import settings
 
 from .log_context import set_context
 
@@ -271,4 +279,157 @@ class RequestLoggingMiddleware:
 
         return response
 
-        
+class SessionBindingMiddleware:
+    """
+    Browser session binding protection.
+
+    Prevents replay of a stolen session cookie by requiring an additional
+    browser binding token.
+
+    This middleware MUST be placed:
+
+        SessionMiddleware
+        ↓
+        SessionBindingMiddleware
+        ↓
+        AuthenticationMiddleware
+
+    so the binding is verified before Django authenticates the session.
+    """
+
+    COOKIE_NAME = settings.BINDING_COOKIE_NAME
+    SESSION_KEY = settings.BINDING_SESSION_KEY
+
+    # URL names that must bypass binding verification
+    EXEMPT_URL_NAMES = {
+        "account_login",
+        "account_logout",
+        "account_reset_password",
+        "account_reset_password_done",
+        "account_reset_password_from_key",
+        "account_reset_password_from_key_done",
+        "admin_login",
+    }
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+
+        # ------------------------------------------------------------
+        # Ignore anonymous sessions
+        # ------------------------------------------------------------
+        if request.session.session_key is None:
+            return self.get_response(request)
+
+        # ------------------------------------------------------------
+        # Skip exempt URLs
+        # ------------------------------------------------------------
+        try:
+            match = resolve(request.path_info)
+
+            if match.url_name in self.EXEMPT_URL_NAMES:
+                return self.get_response(request)
+
+        except Resolver404:
+            # Unknown URL
+            return self.get_response(request)
+
+        # ------------------------------------------------------------
+        # Retrieve binding tokens
+        # ------------------------------------------------------------
+        session_token = request.session.get(self.SESSION_KEY)
+        cookie_token = request.COOKIES.get(self.COOKIE_NAME)
+
+        # ------------------------------------------------------------
+        # Session has no binding token
+        #
+        # This may happen for:
+        # - anonymous sessions
+        # - old sessions created before this feature
+        #
+        # Allow the request to continue.
+        # ------------------------------------------------------------
+        if session_token is None:
+            return self.get_response(request)
+
+        # ------------------------------------------------------------
+        # Cookie missing
+        # ------------------------------------------------------------
+        if cookie_token is None:
+
+            logger.warning(
+                "Session binding cookie missing. "
+                "session=%s ip=%s path=%s ua=%s",
+                request.session.session_key,
+                request.META.get("REMOTE_ADDR"),
+                request.path,
+                request.META.get("HTTP_USER_AGENT", "")[:250],
+            )
+
+            return HttpResponseForbidden("Invalid session binding.")
+
+        # ------------------------------------------------------------
+        # Binding mismatch
+        # ------------------------------------------------------------
+        print("Session :", repr(session_token))
+        print("Cookie  :", repr(cookie_token))
+        print("Equal   :", session_token == cookie_token)
+        if not secrets.compare_digest(session_token, cookie_token):
+
+            logger.warning(
+                "Session binding mismatch. "
+                "session=%s ip=%s path=%s ua=%s",
+                request.session.session_key,
+                request.META.get("REMOTE_ADDR"),
+                request.path,
+                request.META.get("HTTP_USER_AGENT", "")[:250],
+            )
+
+            return HttpResponseForbidden("Invalid session binding.")
+
+        return self.get_response(request)
+
+class SessionBindingCookieMiddleware:
+
+
+    COOKIE_NAME = settings.BINDING_COOKIE_NAME
+    SESSION_KEY = settings.BINDING_SESSION_KEY
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+
+        # ------------------------------------------
+        # Create cookie after successful login
+        # ------------------------------------------
+        if request.session.pop("_set_binding_cookie", False):
+
+            response.set_cookie(
+                self.COOKIE_NAME,
+                request.session["_binding_token"],
+                httponly=True,
+                secure=not settings.DEBUG,
+                samesite="Lax",
+                path="/",
+            )
+
+        # ------------------------------------------
+        # Remove cookie after logout
+        # ------------------------------------------
+        try:
+            match = resolve(request.path_info)
+
+            if match.url_name == "account_logout":
+                response.delete_cookie(
+                    self.COOKIE_NAME,
+                    path="/",
+                )
+
+        except Resolver404:
+            pass
+
+        return response
+

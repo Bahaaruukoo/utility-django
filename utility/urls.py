@@ -2,7 +2,6 @@
 from django.urls import include, path
 
 from core import views as core_views
-from core.admin import platform_admin_site  # ✅ platform admin site (custom)
 from core.admin import tenant_admin_site  # ✅ tenant admin site (custom)
 from portal.views import landing_page
 from tenant_manager.admin import tenant_domain_admin_site

@@ -21,6 +21,9 @@ class BranchFilteredAdmin(admin.ModelAdmin):
         if tenant and branch:
             return qs.filter(tenant=tenant, branch=branch)
 
+        '''if tenant:
+            return qs.filter(tenant=tenant)'''
+
         return qs.none()
 
     def get_form(self, request, obj=None, **kwargs):

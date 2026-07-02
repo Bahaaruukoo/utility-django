@@ -74,6 +74,8 @@ MIDDLEWARE = [
     'core.middleware.PublicAuthSchemaMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'core.middleware.SessionBindingMiddleware',
+
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -89,7 +91,10 @@ MIDDLEWARE = [
     "core.middleware.BranchMiddleware",
     "core.middleware.NoTenantUserOnPublicAdminMiddleware",
     "core.session.session_meta_middleware.SessionMetaMiddleware",
+    'core.middleware.SessionBindingCookieMiddleware',
+
     "core.middleware.RequestLoggingMiddleware",
+
 ]
 
 REST_FRAMEWORK = {
@@ -149,7 +154,19 @@ DATABASE_ROUTERS = (
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
+if DEBUG:
+    BINDING_COOKIE_NAME = "binding_token"
+else:
+    BINDING_COOKIE_NAME = "__Host-binding_token"
 
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SAMESITE = "Lax"
+
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SAMESITE = "Lax"
+SESSION_SAVE_EVERY_REQUEST = False
 # ------------------------------------------------------------------------------
 # TENANT CONFIG
 # ------------------------------------------------------------------------------
@@ -159,7 +176,6 @@ TENANT_DOMAIN_MODEL = "tenant_manager.Domain"
 
 #SHOW_PUBLIC_IF_NO_TENANT_FOUND = True
 #TENANT_NOT_FOUND_EXCEPTION = True
-
 
 
 # ------------------------------------------------------------------------------

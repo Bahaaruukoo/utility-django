@@ -33,6 +33,7 @@ class CoreAppConfig(AppConfig):
     def ready(self):
         import core.auth_logging
         import core.session.admin_sessions
+        import core.signals
 
         # Connect the signal so it runs after every 'migrate' command
         post_migrate.connect(create_default_roles, sender=self)

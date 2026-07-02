@@ -21,6 +21,7 @@ class TenantAdminSite(AdminSessionViewsMixin, AdminSite):
     site_title = "Tenant Admin"
     index_title = ""
 
+
     def each_context(self, request):
         context = super().each_context(request)
 

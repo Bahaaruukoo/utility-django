@@ -70,6 +70,12 @@ class CashierSession(BranchAwareModel):
                 name="one_open_cashier_session_per_user"
             )
         ]
+        permissions = [
+            ("open_cashier_session", "Can open cashier session"),
+            ("close_cashier_session", "Can close cashier session"),
+            ("approve_cashier_session", "Can approve cashier session"),
+            ("view_cashier_reports", "Can view cashier reports"),
+        ]
 
     def request_close(self):
         pass

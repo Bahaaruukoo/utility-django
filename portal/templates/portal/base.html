@@ -212,7 +212,7 @@
             <!-- Top Navbar -->
             <nav class="navbar navbar-light  border-bottom px-4" style='background-color: #7e81833b;'>
                 <div class="ms-auto d-flex align-items-center">
-                    <strong class="me-3"><a style="text-decoration: none; color: black;" href="{% url 'portal_home' %}">{{ request.branch.name }}</a></strong>
+                    <strong class="me-3"><a style="text-decoration: none; color: black;" href="{% url 'portal_home' %}">{{ request.branch.name.capitalize }}</a></strong>
                     
                 </div>
                  <div class="dropdown">
