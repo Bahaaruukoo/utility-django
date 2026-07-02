@@ -286,24 +286,21 @@ class SessionBindingMiddleware:
     Prevents replay of a stolen session cookie by requiring an additional
     browser binding token.
 
-    This middleware MUST be placed:
+    Middleware order:
 
         SessionMiddleware
-        ↓
+            ↓
         SessionBindingMiddleware
-        ↓
+            ↓
         AuthenticationMiddleware
-
-    so the binding is verified before Django authenticates the session.
     """
 
     COOKIE_NAME = settings.BINDING_COOKIE_NAME
     SESSION_KEY = settings.BINDING_SESSION_KEY
 
-    # URL names that must bypass binding verification
     EXEMPT_URL_NAMES = {
         "account_login",
-        "account_logout",
+        "account_logout",  # allow GET confirmation page
         "account_reset_password",
         "account_reset_password_done",
         "account_reset_password_from_key",
@@ -316,15 +313,10 @@ class SessionBindingMiddleware:
 
     def __call__(self, request):
 
-        # ------------------------------------------------------------
-        # Ignore anonymous sessions
-        # ------------------------------------------------------------
+        # No authenticated session yet
         if request.session.session_key is None:
             return self.get_response(request)
 
-        # ------------------------------------------------------------
-        # Skip exempt URLs
-        # ------------------------------------------------------------
         try:
             match = resolve(request.path_info)
 
@@ -332,32 +324,16 @@ class SessionBindingMiddleware:
                 return self.get_response(request)
 
         except Resolver404:
-            # Unknown URL
             return self.get_response(request)
 
-        # ------------------------------------------------------------
-        # Retrieve binding tokens
-        # ------------------------------------------------------------
         session_token = request.session.get(self.SESSION_KEY)
         cookie_token = request.COOKIES.get(self.COOKIE_NAME)
 
-        # ------------------------------------------------------------
-        # Session has no binding token
-        #
-        # This may happen for:
-        # - anonymous sessions
-        # - old sessions created before this feature
-        #
-        # Allow the request to continue.
-        # ------------------------------------------------------------
+        # Legacy sessions created before browser binding
         if session_token is None:
             return self.get_response(request)
 
-        # ------------------------------------------------------------
-        # Cookie missing
-        # ------------------------------------------------------------
         if cookie_token is None:
-
             logger.warning(
                 "Session binding cookie missing. "
                 "session=%s ip=%s path=%s ua=%s",
@@ -369,14 +345,7 @@ class SessionBindingMiddleware:
 
             return HttpResponseForbidden("Invalid session binding.")
 
-        # ------------------------------------------------------------
-        # Binding mismatch
-        # ------------------------------------------------------------
-        print("Session :", repr(session_token))
-        print("Cookie  :", repr(cookie_token))
-        print("Equal   :", session_token == cookie_token)
         if not secrets.compare_digest(session_token, cookie_token):
-
             logger.warning(
                 "Session binding mismatch. "
                 "session=%s ip=%s path=%s ua=%s",
@@ -390,8 +359,20 @@ class SessionBindingMiddleware:
 
         return self.get_response(request)
 
-class SessionBindingCookieMiddleware:
 
+class SessionBindingCookieMiddleware:
+    """
+    Handles creation and removal of the browser binding cookie.
+
+    The cookie is created immediately after a successful login and removed
+    automatically whenever Django destroys the authenticated session.
+
+    This works for:
+
+    - allauth logout
+    - Django admin logout
+    - future custom logout views
+    """
 
     COOKIE_NAME = settings.BINDING_COOKIE_NAME
     SESSION_KEY = settings.BINDING_SESSION_KEY
@@ -400,36 +381,38 @@ class SessionBindingCookieMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+
+        # Remember whether a session existed BEFORE processing.
+        had_session = bool(request.session.session_key)
+
         response = self.get_response(request)
 
-        # ------------------------------------------
-        # Create cookie after successful login
-        # ------------------------------------------
+        # -------------------------------------------------------
+        # Create browser binding cookie after successful login
+        # -------------------------------------------------------
         if request.session.pop("_set_binding_cookie", False):
 
-            response.set_cookie(
-                self.COOKIE_NAME,
-                request.session["_binding_token"],
-                httponly=True,
-                secure=not settings.DEBUG,
-                samesite="Lax",
-                path="/",
-            )
+            token = request.session.get(self.SESSION_KEY)
 
-        # ------------------------------------------
-        # Remove cookie after logout
-        # ------------------------------------------
-        try:
-            match = resolve(request.path_info)
-
-            if match.url_name == "account_logout":
-                response.delete_cookie(
+            if token:
+                response.set_cookie(
                     self.COOKIE_NAME,
+                    token,
+                    httponly=True,
+                    secure=not settings.DEBUG,
+                    samesite="Lax",
                     path="/",
                 )
 
-        except Resolver404:
-            pass
+        # -------------------------------------------------------
+        # Remove browser binding cookie when the authenticated
+        # session has been destroyed.
+        # -------------------------------------------------------
+        if had_session and request.session.session_key is None:
+
+            response.delete_cookie(
+                self.COOKIE_NAME,
+                path="/",
+            )
 
         return response
-
